@@ -85,4 +85,22 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, registerUser };
+const seedSuperadmin = async (req, res) => {
+  try {
+    const superAdminExists = await User.findOne({ email: 'superadmin@credita.com' });
+    if (superAdminExists) {
+      return res.status(400).json({ message: 'Superadmin já existe.' });
+    }
+    const superAdmin = new User({
+      email: 'superadmin@credita.com',
+      password: '@Admin123@',
+      role: 'superadmin'
+    });
+    await superAdmin.save();
+    res.status(201).json({ message: 'Superadmin criado com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { loginUser, registerUser, seedSuperadmin };
