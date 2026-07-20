@@ -4,6 +4,12 @@
     
     <div class="main-content-wrapper">
       <Header @toggle-mobile-sidebar="mobileSidebarOpen = true" />
+      
+      <!-- Expiry Alert Banner -->
+      <div v-if="daysRemaining !== null && daysRemaining <= 5 && daysRemaining > 0" class="expiry-banner bg-yellow-100 text-yellow-800 p-3 text-center text-sm font-semibold border-b border-yellow-200">
+        Atenção: A sua assinatura expira em {{ daysRemaining }} dia{{ daysRemaining > 1 ? 's' : '' }}! <router-link to="/app/assinatura" class="underline text-blue-600">Renovar agora</router-link>.
+      </div>
+      
       <main class="main-content">
         <router-view></router-view>
       </main>
@@ -26,12 +32,34 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import Sidebar from './Sidebar.vue';
 import Header from './Header.vue';
 import ToastList from './ToastList.vue';
+import api from '../api';
 
 const sidebarCollapsed = ref(false);
 const mobileSidebarOpen = ref(false);
+const daysRemaining = ref(null);
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value;
+};
+
+const loadCompanyData = async () => {
+  try {
+    const { data } = await api.get('/company/settings');
+    if (data.nextBillingDate) {
+      const next = new Date(data.nextBillingDate);
+      const now = new Date();
+      const diffTime = next - now;
+      daysRemaining.value = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } else if (data.subscriptionPlan === 'trial') {
+      const created = new Date(data.createdAt);
+      created.setDate(created.getDate() + 30);
+      const now = new Date();
+      const diffTime = created - now;
+      daysRemaining.value = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+  } catch (error) {
+    console.error('Error loading expiry data');
+  }
 };
 
 // Handle responsive logic
@@ -46,6 +74,7 @@ const handleResize = () => {
 
 onMounted(() => {
   handleResize();
+  loadCompanyData();
   window.addEventListener('resize', handleResize);
 });
 
