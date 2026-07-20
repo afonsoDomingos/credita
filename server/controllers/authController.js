@@ -11,28 +11,38 @@ const generateToken = (id) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  console.log(`[AUTH] Tentativa de login recebida para: ${email}`);
 
   try {
     const user = await User.findOne({ email }).populate('company');
-
-    if (user && (await user.matchPassword(password))) {
-      // Check if it's a company and if the company is suspended
-      if (user.role === 'empresa' && user.company && !user.company.isActive) {
-        return res.status(403).json({ message: 'A sua conta encontra-se suspensa. Contacte o administrador.' });
-      }
-
-      res.json({
-        _id: user._id,
-        email: user.email,
-        role: user.role,
-        company: user.company,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: 'Email ou password incorretos' });
+    
+    if (!user) {
+      console.log(`[AUTH] Falha: Utilizador ${email} não encontrado na BD.`);
+      return res.status(401).json({ message: 'Email ou password incorretos' });
     }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      console.log(`[AUTH] Falha: Password incorreta para ${email}.`);
+      return res.status(401).json({ message: 'Email ou password incorretos' });
+    }
+
+    // Check if it's a company and if the company is suspended
+    if (user.role === 'empresa' && user.company && !user.company.isActive) {
+      console.log(`[AUTH] Falha: Empresa suspensa (${email}).`);
+      return res.status(403).json({ message: 'A sua conta encontra-se suspensa. Contacte o administrador.' });
+    }
+
+    console.log(`[AUTH] Sucesso: Login aprovado para ${email} (Role: ${user.role})`);
+    res.json({
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+      company: user.company,
+      token: generateToken(user._id),
+    });
   } catch (error) {
-    console.error(error);
+    console.error('[AUTH] Erro interno durante o login:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };

@@ -10,6 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Custom Request Logger for Production Debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => console.error('❌ MongoDB Connection Error:', err));
