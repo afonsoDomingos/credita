@@ -8,6 +8,10 @@ const CompanySchema = new mongoose.Schema({
   nif: {
     type: String
   },
+  logoUrl: {
+    type: String,
+    default: ''
+  },
   subscriptionPlan: {
     type: String,
     enum: ['trial', 'pro', 'premium'],

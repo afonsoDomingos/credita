@@ -9,6 +9,20 @@
       <div v-if="loading" class="text-center text-muted">A carregar definições...</div>
       
       <form v-else @submit.prevent="salvarDefinicoes" class="settings-form">
+        <div class="profile-header mb-8">
+          <div class="logo-preview">
+            <img v-if="logoPreviewUrl || form.logoUrl" :src="logoPreviewUrl || form.logoUrl" alt="Logótipo" />
+            <div v-else class="logo-placeholder">Sem Logo</div>
+          </div>
+          <div class="logo-upload">
+            <label class="btn-secondary" style="cursor: pointer;">
+              Alterar Logótipo
+              <input type="file" accept="image/*" @change="onLogoChange" hidden />
+            </label>
+            <p class="text-muted text-xs mt-2">Formatos: JPG, PNG. Máx 5MB.</p>
+          </div>
+        </div>
+
         <h3 class="font-semibold mb-4 border-b pb-2">Informações Gerais</h3>
         
         <div class="grid-2 gap-6">
@@ -52,10 +66,13 @@ const saving = ref(false);
 const successMsg = ref('');
 const errorMsg = ref('');
 const planoAtual = ref('');
+const logoFile = ref(null);
+const logoPreviewUrl = ref(null);
 
 const form = ref({
   name: '',
-  nif: ''
+  nif: '',
+  logoUrl: ''
 });
 
 const loadDefinicoes = async () => {
@@ -63,6 +80,7 @@ const loadDefinicoes = async () => {
     const { data } = await api.get('/company/settings');
     form.value.name = data.name;
     form.value.nif = data.nif || '';
+    form.value.logoUrl = data.logoUrl || '';
     planoAtual.value = data.subscriptionPlan;
   } catch (error) {
     console.error(error);
@@ -71,12 +89,33 @@ const loadDefinicoes = async () => {
   }
 };
 
+const onLogoChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    logoFile.value = file;
+    logoPreviewUrl.value = URL.createObjectURL(file);
+  }
+};
+
 const salvarDefinicoes = async () => {
   saving.value = true;
   successMsg.value = '';
   errorMsg.value = '';
   try {
-    await api.put('/company/settings', form.value);
+    const formData = new FormData();
+    formData.append('name', form.value.name);
+    formData.append('nif', form.value.nif);
+    if (logoFile.value) {
+      formData.append('logo', logoFile.value);
+    }
+
+    const { data } = await api.put('/company/settings', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    form.value.logoUrl = data.logoUrl; // Update with new remote URL
+    logoFile.value = null; // Clear pending file
+    
     successMsg.value = 'Definições atualizadas com sucesso!';
     setTimeout(() => { successMsg.value = ''; }, 3000);
   } catch (error) {
@@ -144,7 +183,44 @@ onMounted(() => {
   border-radius: var(--radius-sm);
 }
 
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo-preview img, .logo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.btn-secondary {
+  padding: 8px 16px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-body);
+}
+
 @media (max-width: 768px) {
   .grid-2 { grid-template-columns: 1fr; }
+  .profile-header { flex-direction: column; align-items: flex-start; }
 }
 </style>
