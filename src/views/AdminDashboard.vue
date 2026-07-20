@@ -6,32 +6,69 @@
     </div>
 
     <div class="surface p-0 overflow-hidden">
-      <table class="companies-table">
+      <div v-if="loading" class="p-6 text-center text-muted">
+        A carregar empresas...
+      </div>
+      
+      <table class="companies-table" v-else-if="empresas.length > 0">
         <thead>
           <tr>
             <th>Nome da Empresa</th>
-            <th>Email Dono</th>
+            <th>NIF</th>
             <th>Plano</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Empresa Teste</td>
-            <td>empresa@credita.com</td>
-            <td>Premium</td>
-            <td><span class="badge badge-active">Ativa</span></td>
+          <tr v-for="empresa in empresas" :key="empresa._id">
+            <td class="font-medium">{{ empresa.name }}</td>
+            <td>{{ empresa.nif || 'N/A' }}</td>
+            <td class="capitalize">{{ empresa.subscriptionPlan }}</td>
+            <td>
+              <span class="badge" :class="empresa.isActive ? 'badge-active' : 'badge-inactive'">
+                {{ empresa.isActive ? 'Ativa' : 'Inativa' }}
+              </span>
+            </td>
             <td>
               <button class="btn-text">Ver Dados</button>
-              <button class="btn-text text-red">Suspender</button>
+              <button class="btn-text" :class="empresa.isActive ? 'text-red' : 'text-green'">
+                {{ empresa.isActive ? 'Suspender' : 'Ativar' }}
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
+      
+      <div v-else class="p-6 text-center text-muted">
+        Ainda não tem empresas registadas.
+      </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import api from '../api';
+
+const empresas = ref([]);
+const loading = ref(true);
+
+const loadEmpresas = async () => {
+  try {
+    const { data } = await api.get('/dashboard/superadmin');
+    empresas.value = data.empresas;
+  } catch (error) {
+    console.error('Error loading companies', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadEmpresas();
+});
+</script>
 
 <style scoped>
 .companies-table {
@@ -52,6 +89,10 @@
   font-size: 0.875rem;
 }
 
+.capitalize {
+  text-transform: capitalize;
+}
+
 .badge {
   padding: 4px 10px;
   border-radius: 12px;
@@ -63,6 +104,13 @@
   background-color: #DCFCE7;
   color: #16A34A;
 }
+
+.badge-inactive {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.text-green { color: #16A34A; }
 
 .btn-text {
   background: none;

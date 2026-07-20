@@ -45,6 +45,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '../api';
 
 const router = useRouter();
 const email = ref('');
@@ -57,24 +58,28 @@ const handleLogin = async () => {
   errorMsg.value = '';
   
   try {
-    // Para fins de teste sem API ligada, vamos simular o login com base nos emails que pediu:
-    // Na vida real faríamos: const res = await axios.post('/api/auth/login', { email, password })
+    const { data } = await api.post('/auth/login', {
+      email: email.value,
+      password: password.value
+    });
     
-    setTimeout(() => {
-      if (email.value === 'superadmin@credita.com' && password.value === '@Admin123@') {
-        localStorage.setItem('user', JSON.stringify({ role: 'superadmin', email: email.value }));
-        router.push('/admin');
-      } else if (email.value === 'empresa@credita.com' && password.value === '@Empresa123@') {
-        localStorage.setItem('user', JSON.stringify({ role: 'empresa', email: email.value }));
-        router.push('/app');
-      } else {
-        errorMsg.value = 'Credenciais inválidas.';
-      }
-      loading.value = false;
-    }, 800);
+    // Save token and user details to localStorage
+    localStorage.setItem('user', JSON.stringify({
+      id: data._id,
+      email: data.email,
+      role: data.role,
+      token: data.token
+    }));
     
+    // Redirect based on role
+    if (data.role === 'superadmin') {
+      router.push('/admin');
+    } else {
+      router.push('/app');
+    }
   } catch (error) {
-    errorMsg.value = 'Erro ao tentar iniciar sessão.';
+    errorMsg.value = error.response?.data?.message || 'Erro ao tentar iniciar sessão.';
+  } finally {
     loading.value = false;
   }
 };

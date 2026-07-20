@@ -70,19 +70,22 @@
               <h3 class="font-semibold">Últimos Clientes</h3>
               <a href="#" class="text-sm text-primary font-medium">Ver todos</a>
             </div>
-            <div class="list-content">
-              <div class="list-item flex items-center justify-between" v-for="i in 3" :key="'cliente'+i">
+            <div class="list-content" v-if="dashboardData && dashboardData.ultimosClientes.length > 0">
+              <div class="list-item flex items-center justify-between" v-for="(cliente, index) in dashboardData.ultimosClientes" :key="cliente._id">
                 <div class="flex items-center gap-3">
                   <div class="avatar-sm bg-primary-light text-primary font-bold flex items-center justify-center rounded-full">
-                    C{{ i }}
+                    {{ cliente.name.charAt(0) }}
                   </div>
                   <div>
-                    <div class="font-medium text-sm">Cliente Exemplo {{ i }}</div>
-                    <div class="text-xs text-muted">Há {{ i * 2 }} horas</div>
+                    <div class="font-medium text-sm">{{ cliente.name }}</div>
+                    <div class="text-xs text-muted">{{ cliente.phone }}</div>
                   </div>
                 </div>
                 <button class="btn-secondary-sm">Ver</button>
               </div>
+            </div>
+            <div v-else class="p-4 text-center text-sm text-muted">
+              Nenhum cliente cadastrado ainda.
             </div>
           </div>
         </div>
@@ -135,23 +138,41 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { 
   Users, Banknote, CreditCard, Wallet, 
   TrendingUp, TrendingDown, AlertCircle, 
   CheckCircle2, Download, Plus, MoreHorizontal,
   BarChart2, PieChart, Calendar
 } from '@lucide/vue';
+import api from '../api';
 
-const stats = [
-  { title: 'Total de Clientes', value: '1.248', trend: 'up', trendValue: '+12%', icon: Users, colorClass: 'bg-blue-light text-blue' },
-  { title: 'Empréstimos Ativos', value: '342', trend: 'up', trendValue: '+5%', icon: Banknote, colorClass: 'bg-indigo-light text-indigo' },
-  { title: 'Valor Emprestado', value: 'Kz 15.4M', trend: 'up', trendValue: '+8.2%', icon: Wallet, colorClass: 'bg-purple-light text-purple' },
-  { title: 'Valor Recebido', value: 'Kz 4.2M', trend: 'down', trendValue: '-2.4%', icon: CreditCard, colorClass: 'bg-green-light text-green' },
-  { title: 'Lucro do Mês', value: 'Kz 1.8M', trend: 'up', trendValue: '+14%', icon: TrendingUp, colorClass: 'bg-emerald-light text-emerald' },
-  { title: 'Cobranças em Atraso', value: '45', trend: 'down', trendValue: '-5', icon: AlertCircle, colorClass: 'bg-red-light text-red' },
-  { title: 'Caixa Atual', value: 'Kz 8.5M', trend: 'up', trendValue: '+2.1%', icon: Wallet, colorClass: 'bg-blue-light text-blue' },
-  { title: 'Assinatura', value: 'Plano Pro', trend: null, trendValue: 'Ativa até Dez', icon: CheckCircle2, colorClass: 'bg-green-light text-green' },
-];
+const loading = ref(true);
+const dashboardData = ref(null);
+const stats = ref([]);
+
+const loadDashboard = async () => {
+  try {
+    const { data } = await api.get('/dashboard/empresa');
+    dashboardData.value = data;
+    
+    stats.value = [
+      { title: 'Total de Clientes', value: data.totalClientes, trend: null, trendValue: 'Cadastrados', icon: Users, colorClass: 'bg-blue-light text-blue' },
+      { title: 'Empréstimos Ativos', value: data.totalEmprestimosAtivos, trend: null, trendValue: 'Em curso', icon: Banknote, colorClass: 'bg-indigo-light text-indigo' },
+      { title: 'Valor Emprestado', value: `Kz ${data.valorEmprestado.toLocaleString()}`, trend: null, trendValue: 'Total', icon: Wallet, colorClass: 'bg-purple-light text-purple' },
+      { title: 'Valor Recebido', value: `Kz ${data.valorRecebido.toLocaleString()}`, trend: null, trendValue: 'Total', icon: CreditCard, colorClass: 'bg-green-light text-green' },
+      { title: 'Plano', value: data.plano.toUpperCase(), trend: null, trendValue: 'Assinatura', icon: CheckCircle2, colorClass: 'bg-green-light text-green' },
+    ];
+  } catch (error) {
+    console.error('Error loading dashboard', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadDashboard();
+});
 </script>
 
 <style scoped>
