@@ -15,6 +15,10 @@
         Comprovativos
         <span v-if="receipts.length > 0" class="badge-count">{{ receipts.length }}</span>
       </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'suporte' }" @click="loadInbox(); activeTab = 'suporte'">
+        Suporte / Mensagens
+        <span v-if="totalUnread > 0" class="badge-count">{{ totalUnread }}</span>
+      </button>
     </div>
 
     <!-- System Health Banner -->
@@ -160,6 +164,71 @@
           Não há comprovativos pendentes.
         </div>
       </div>
+
+      <div v-if="activeTab === 'suporte'" class="support-container">
+        <div class="inbox-list border-r">
+          <div v-if="inbox.length === 0" class="p-4 text-center text-muted text-sm">
+            Nenhuma mensagem.
+          </div>
+          <div 
+            v-for="item in inbox" :key="item._id"
+            class="inbox-item"
+            :class="{ 'active-inbox': selectedCompanyId === item._id }"
+            @click="selectCompanyChat(item._id)"
+          >
+            <div class="inbox-avatar">
+              {{ item.companyInfo.name.charAt(0).toUpperCase() }}
+              <span v-if="item.unreadCount > 0" class="unread-dot"></span>
+            </div>
+            <div class="inbox-details">
+              <h4 class="font-bold text-sm truncate">{{ item.companyInfo.name }}</h4>
+              <span class="text-xs text-muted">{{ new Date(item.lastMessageDate).toLocaleDateString() }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chat-area">
+          <div v-if="!selectedCompanyId" class="empty-chat">
+            <MessageSquare :size="48" class="text-gray-300 mb-4" />
+            <p class="text-muted">Selecione uma empresa para ver as mensagens</p>
+          </div>
+          
+          <template v-else>
+            <div class="chat-messages" ref="adminMessagesContainer">
+              <div 
+                v-for="msg in adminMessages" 
+                :key="msg._id" 
+                class="message-wrapper" 
+                :class="msg.sender === 'superadmin' ? 'my-msg' : 'company-msg'"
+              >
+                <div class="message-bubble">
+                  {{ msg.content }}
+                </div>
+                <span class="msg-time">{{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+              </div>
+            </div>
+            
+            <div class="chat-input-area border-t">
+              <div class="quick-admin-replies mb-3 flex gap-2">
+                <button class="quick-badge" @click="adminReplyMessageText = 'Olá! Recebemos a sua mensagem. Em que podemos ajudar?'">Saudação</button>
+                <button class="quick-badge" @click="adminReplyMessageText = 'O seu problema já foi resolvido. Mais alguma questão?'">Resolvido</button>
+                <button class="quick-badge" @click="adminReplyMessageText = 'Vamos analisar a situação e já lhe damos feedback.'">Em Análise</button>
+              </div>
+              <form @submit.prevent="sendAdminReply" class="flex gap-2">
+                <input 
+                  type="text" 
+                  v-model="adminReplyMessageText" 
+                  placeholder="Escreva a resposta..." 
+                  class="chat-input flex-1"
+                />
+                <button type="submit" class="btn-primary flex items-center justify-center p-3 rounded-full" :disabled="!adminReplyMessageText.trim() || sendingReply">
+                  <Send :size="18" />
+                </button>
+              </form>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
 
     <!-- Modal Nova Empresa -->
@@ -271,8 +340,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Building2, Activity, Users, Edit, Power, Trash2 } from '@lucide/vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
+import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
 import api from '../api';
@@ -283,6 +352,13 @@ const receipts = ref([]);
 const stats = ref(null);
 const loading = ref(true);
 const activeTab = ref('empresas');
+
+const inbox = ref([]);
+const adminMessages = ref([]);
+const selectedCompanyId = ref(null);
+const adminReplyMessageText = ref('');
+const sendingReply = ref(false);
+const adminMessagesContainer = ref(null);
 
 const showModal = ref(false);
 const showPlanModal = ref(false);
@@ -315,10 +391,63 @@ const loadEmpresas = async () => {
     // Load receipts
     const receiptsRes = await api.get('/admin/receipts/pending');
     receipts.value = receiptsRes.data;
+    
+    // Load inbox silently
+    const inboxRes = await api.get('/support/admin/inbox');
+    inbox.value = inboxRes.data;
   } catch (error) {
     console.error('Error loading data', error);
   } finally {
     loading.value = false;
+  }
+};
+
+const totalUnread = computed(() => {
+  return inbox.value.reduce((acc, item) => acc + item.unreadCount, 0);
+});
+
+const loadInbox = async () => {
+  try {
+    const inboxRes = await api.get('/support/admin/inbox');
+    inbox.value = inboxRes.data;
+  } catch (error) {
+    console.error('Erro ao carregar inbox');
+  }
+};
+
+const selectCompanyChat = async (companyId) => {
+  selectedCompanyId.value = companyId;
+  try {
+    const { data } = await api.get(`/support/admin/company/${companyId}`);
+    adminMessages.value = data;
+    loadInbox(); // Refresh unread count
+    
+    nextTick(() => {
+      if (adminMessagesContainer.value) {
+        adminMessagesContainer.value.scrollTop = adminMessagesContainer.value.scrollHeight;
+      }
+    });
+  } catch (error) {
+    toast.error('Erro ao carregar mensagens');
+  }
+};
+
+const sendAdminReply = async () => {
+  if (!adminReplyMessageText.value.trim() || !selectedCompanyId.value) return;
+  
+  sendingReply.value = true;
+  try {
+    await api.post(`/support/admin/company/${selectedCompanyId.value}`, {
+      content: adminReplyMessageText.value
+    });
+    
+    adminReplyMessageText.value = '';
+    // Reload chat
+    await selectCompanyChat(selectedCompanyId.value);
+  } catch (error) {
+    toast.error('Erro ao enviar mensagem');
+  } finally {
+    sendingReply.value = false;
   }
 };
 
@@ -727,5 +856,132 @@ onMounted(() => {
 
 .loader-wrapper {
   padding: 60px 0;
+}
+
+/* Support Chat Styles */
+.support-container {
+  display: flex;
+  height: 600px;
+}
+.inbox-list {
+  width: 280px;
+  background-color: #F8FAFC;
+  overflow-y: auto;
+}
+.inbox-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+.inbox-item:hover {
+  background-color: #F1F5F9;
+}
+.active-inbox {
+  background-color: #E0E7FF;
+  border-left: 4px solid #4F46E5;
+}
+.inbox-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #475569;
+  position: relative;
+}
+.unread-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background-color: #EF4444;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+.empty-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #F8FAFC;
+}
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+.my-msg {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.company-msg {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+}
+.my-msg .message-bubble {
+  background-color: #3B82F6;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.company-msg .message-bubble {
+  background-color: white;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 4px;
+}
+.msg-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.chat-input-area {
+  padding: 16px;
+  background-color: white;
+}
+.chat-input {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  outline: none;
+}
+.quick-badge {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background-color: #F1F5F9;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.quick-badge:hover {
+  border-color: #3B82F6;
+  color: #3B82F6;
 }
 </style>

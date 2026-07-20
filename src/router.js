@@ -13,6 +13,7 @@ import Estatisticas from './views/Estatisticas.vue';
 import Relatorios from './views/Relatorios.vue';
 import Perfil from './views/Perfil.vue';
 import Assinatura from './views/Assinatura.vue';
+import Ajuda from './views/Ajuda.vue';
 
 const routes = [
   {
@@ -47,7 +48,7 @@ const routes = [
       { path: 'perfil', name: 'Perfil', component: Perfil },
       { path: 'assinatura', name: 'Assinatura', component: Assinatura },
       { path: 'configuracoes', name: 'Configurações', component: Empresa },
-      { path: 'ajuda', name: 'Ajuda', component: () => import('./views/Placeholder.vue') },
+      { path: 'ajuda', name: 'Ajuda', component: Ajuda },
     ],
   },
   {
