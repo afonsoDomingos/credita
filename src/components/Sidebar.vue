@@ -6,7 +6,7 @@
           <Building2 color="white" :size="20" />
         </div>
         <div class="company-info">
-          <h2 class="font-bold text-lg">MicroCrédito</h2>
+          <h2 class="font-bold text-lg">Etako</h2>
           <p class="text-xs text-muted">Afonso & Cia</p>
         </div>
       </div>
