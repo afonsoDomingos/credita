@@ -47,18 +47,22 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Registar Utilizador
 const registerUser = async (req, res) => {
-  const { companyName, nif, email, password } = req.body;
+  const { companyName, nif, phone, email, password } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
+
     if (userExists) {
       return res.status(400).json({ message: 'Este email já está registado.' });
     }
 
+    // Criar a Empresa primeiro
     const company = new Company({
       name: companyName,
       nif: nif || '',
+      phone: phone || '',
       subscriptionPlan: 'trial',
       isActive: true
     });

@@ -8,6 +8,9 @@ const CompanySchema = new mongoose.Schema({
   nif: {
     type: String
   },
+  phone: {
+    type: String
+  },
   logoUrl: {
     type: String,
     default: ''

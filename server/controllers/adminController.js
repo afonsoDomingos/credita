@@ -8,7 +8,7 @@ const Payment = require('../models/Payment');
 
 // Criar nova empresa e utilizador dono (SaaS Onboarding)
 const createCompany = async (req, res) => {
-  const { name, nif, plan, email, password } = req.body;
+  const { name, nif, phone, plan, email, password } = req.body;
 
   try {
     // 1. Check if email is already taken
@@ -21,6 +21,7 @@ const createCompany = async (req, res) => {
     const company = new Company({
       name,
       nif,
+      phone: phone || '',
       subscriptionPlan: plan,
       isActive: true
     });

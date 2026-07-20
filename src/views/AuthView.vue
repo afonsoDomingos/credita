@@ -7,9 +7,10 @@
           <img src="/logo.png" alt="Microcrédito" style="height: 60px; margin-bottom: 10px; object-fit: contain;" />
           <p class="subtitle">Registe a sua empresa de Microcrédito</p>
           
-          <input type="text" placeholder="Nome da Empresa" v-model="regForm.companyName" required />
+          <input type="text" placeholder="Nome da Empresa *" v-model="regForm.companyName" required />
+          <input type="text" placeholder="Contacto Telefónico *" v-model="regForm.phone" required />
           <input type="text" placeholder="NIF (Opcional)" v-model="regForm.nif" />
-          <input type="email" placeholder="Email do Administrador" v-model="regForm.email" required />
+          <input type="email" placeholder="Email do Administrador *" v-model="regForm.email" required />
           <input type="password" placeholder="Palavra-passe" v-model="regForm.password" required />
           
           <div v-if="regError" class="error-msg">{{ regError }}</div>
@@ -70,7 +71,7 @@ const loading = ref(false);
 const loginForm = ref({ email: '', password: '' });
 const loginError = ref('');
 
-const regForm = ref({ companyName: '', nif: '', email: '', password: '' });
+const regForm = ref({ companyName: '', phone: '', nif: '', email: '', password: '' });
 const regError = ref('');
 
 onMounted(() => {

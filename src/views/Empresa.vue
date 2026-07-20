@@ -31,6 +31,13 @@
             <input type="text" v-model="form.name" required />
           </div>
           <div class="form-group">
+            <label>Telefone / Contacto</label>
+            <input type="text" v-model="form.phone" required />
+          </div>
+        </div>
+        
+        <div class="grid-2 gap-6 mt-4">
+          <div class="form-group">
             <label>NIF / NUIT</label>
             <input type="text" v-model="form.nif" />
           </div>
@@ -71,6 +78,7 @@ const logoPreviewUrl = ref(null);
 
 const form = ref({
   name: '',
+  phone: '',
   nif: '',
   logoUrl: ''
 });
@@ -79,6 +87,7 @@ const loadDefinicoes = async () => {
   try {
     const { data } = await api.get('/company/settings');
     form.value.name = data.name;
+    form.value.phone = data.phone || '';
     form.value.nif = data.nif || '';
     form.value.logoUrl = data.logoUrl || '';
     planoAtual.value = data.subscriptionPlan;
@@ -104,6 +113,7 @@ const salvarDefinicoes = async () => {
   try {
     const formData = new FormData();
     formData.append('name', form.value.name);
+    formData.append('phone', form.value.phone);
     formData.append('nif', form.value.nif);
     if (logoFile.value) {
       formData.append('logo', logoFile.value);

@@ -76,6 +76,10 @@
             <input type="text" v-model="form.name" required />
           </div>
           <div class="form-group">
+            <label>Telefone / Contacto *</label>
+            <input type="text" v-model="form.phone" required />
+          </div>
+          <div class="form-group">
             <label>NIF *</label>
             <input type="text" v-model="form.nif" required />
           </div>
@@ -162,6 +166,7 @@ const planForm = ref({ plan: 'trial' });
 
 const form = ref({
   name: '',
+  phone: '',
   nif: '',
   plan: 'pro',
   email: '',
@@ -182,7 +187,7 @@ const loadEmpresas = async () => {
 
 const openModal = () => {
   errorMsg.value = '';
-  form.value = { name: '', nif: '', plan: 'pro', email: '', password: '' };
+  form.value = { name: '', phone: '', nif: '', plan: 'pro', email: '', password: '' };
   showModal.value = true;
 };
 

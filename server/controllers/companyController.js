@@ -24,6 +24,9 @@ const updateSettings = async (req, res) => {
 
     company.name = req.body.name || company.name;
     company.nif = req.body.nif || company.nif;
+    if (req.body.phone !== undefined) {
+      company.phone = req.body.phone;
+    }
 
     if (req.file) {
       company.logoUrl = req.file.path;
