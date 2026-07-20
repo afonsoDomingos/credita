@@ -311,6 +311,7 @@
           </div>
         </form>
       </div>
+    </div>
     <!-- Modal System Settings -->
     <div v-if="showSystemSettingsModal" class="modal-overlay" @click.self="closeSystemSettingsModal">
       <div class="modal-content surface">
