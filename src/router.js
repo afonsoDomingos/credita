@@ -2,8 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from './components/AppLayout.vue';
 import AdminLayout from './components/AdminLayout.vue';
 import Dashboard from './views/Dashboard.vue';
-import Login from './views/Login.vue';
-import Register from './views/Register.vue';
+import AuthView from './views/AuthView.vue';
 import AdminDashboard from './views/AdminDashboard.vue';
 import Clientes from './views/Clientes.vue';
 import Emprestimos from './views/Emprestimos.vue';
@@ -12,14 +11,18 @@ import Empresa from './views/Empresa.vue';
 
 const routes = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: AuthView
   },
   {
     path: '/register',
     name: 'Register',
-    component: Register
+    component: AuthView
   },
   {
     path: '/app',
