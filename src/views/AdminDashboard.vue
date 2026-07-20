@@ -5,6 +5,21 @@
       <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
     </div>
 
+    <div v-if="stats" class="stats-grid mb-6">
+      <div class="stat-card surface">
+        <h3 class="text-muted text-sm font-semibold mb-1">Total Empresas</h3>
+        <p class="text-3xl font-bold">{{ stats.totalCompanies }}</p>
+      </div>
+      <div class="stat-card surface">
+        <h3 class="text-muted text-sm font-semibold mb-1">Empresas Ativas</h3>
+        <p class="text-3xl font-bold text-green-500">{{ stats.activeCompanies }}</p>
+      </div>
+      <div class="stat-card surface">
+        <h3 class="text-muted text-sm font-semibold mb-1">Total Clientes Globais</h3>
+        <p class="text-3xl font-bold text-blue-500">{{ stats.totalClients }}</p>
+      </div>
+    </div>
+
     <div class="surface p-0 overflow-hidden">
       <div v-if="loading" class="p-6 text-center text-muted">
         A carregar empresas...
@@ -31,10 +46,12 @@
               </span>
             </td>
             <td>
+              <button class="btn-text" @click="openPlanModal(empresa)">Editar Plano</button>
               <button class="btn-text" @click="toggleStatus(empresa)" :disabled="togglingId === empresa._id" :class="empresa.isActive ? 'text-red' : 'text-green'">
                 <span v-if="togglingId === empresa._id">...</span>
                 <span v-else>{{ empresa.isActive ? 'Suspender' : 'Ativar' }}</span>
               </button>
+              <button class="btn-text text-red" @click="apagarEmpresa(empresa)" title="Apagar Empresa">Apagar</button>
             </td>
           </tr>
         </tbody>
@@ -95,6 +112,34 @@
       </div>
     </div>
 
+    <!-- Modal Editar Plano -->
+    <div v-if="showPlanModal" class="modal-overlay" @click.self="closePlanModal">
+      <div class="modal-content surface">
+        <div class="modal-header flex justify-between items-center mb-4">
+          <h2 class="font-bold text-lg">Alterar Plano</h2>
+          <button class="btn-icon" @click="closePlanModal">X</button>
+        </div>
+        
+        <form @submit.prevent="salvarPlano" class="modal-form">
+          <div class="form-group">
+            <label>Novo Plano *</label>
+            <select v-model="planForm.plan" required class="form-select">
+              <option value="trial">Trial</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+
+          <div class="modal-actions mt-6 flex justify-end gap-3">
+            <button type="button" class="btn-secondary" @click="closePlanModal">Cancelar</button>
+            <button type="submit" class="btn-primary" :disabled="saving">
+              {{ saving ? 'A guardar...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -103,12 +148,17 @@ import { ref, onMounted } from 'vue';
 import api from '../api';
 
 const empresas = ref([]);
+const stats = ref(null);
 const loading = ref(true);
 
 const showModal = ref(false);
+const showPlanModal = ref(false);
 const saving = ref(false);
 const errorMsg = ref('');
 const togglingId = ref(null);
+const editingCompany = ref(null);
+
+const planForm = ref({ plan: 'trial' });
 
 const form = ref({
   name: '',
@@ -122,6 +172,7 @@ const loadEmpresas = async () => {
   try {
     const { data } = await api.get('/dashboard/superadmin');
     empresas.value = data.empresas;
+    stats.value = data.stats;
   } catch (error) {
     console.error('Error loading companies', error);
   } finally {
@@ -167,12 +218,58 @@ const toggleStatus = async (empresa) => {
   }
 };
 
+const openPlanModal = (empresa) => {
+  editingCompany.value = empresa;
+  planForm.value.plan = empresa.subscriptionPlan;
+  showPlanModal.value = true;
+};
+
+const closePlanModal = () => {
+  showPlanModal.value = false;
+  editingCompany.value = null;
+};
+
+const salvarPlano = async () => {
+  saving.value = true;
+  try {
+    await api.put(`/admin/companies/${editingCompany.value._id}/plan`, planForm.value);
+    await loadEmpresas();
+    closePlanModal();
+  } catch (error) {
+    alert('Erro ao atualizar plano.');
+  } finally {
+    saving.value = false;
+  }
+};
+
+const apagarEmpresa = async (empresa) => {
+  if (confirm(`ATENÇÃO: Deseja apagar PERMANENTEMENTE a empresa ${empresa.name} e todos os seus dados (clientes, pagamentos, empréstimos)? ESTA AÇÃO NÃO PODE SER DESFEITA.`)) {
+    try {
+      await api.delete(`/admin/companies/${empresa._id}`);
+      await loadEmpresas();
+    } catch (error) {
+      alert('Erro ao apagar empresa.');
+    }
+  }
+};
+
 onMounted(() => {
   loadEmpresas();
 });
 </script>
 
 <style scoped>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.stat-card {
+  padding: 24px;
+}
+.text-green-500 { color: #10B981; }
+.text-blue-500 { color: #3B82F6; }
+
 .companies-table {
   width: 100%;
   border-collapse: collapse;

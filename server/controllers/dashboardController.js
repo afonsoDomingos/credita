@@ -44,9 +44,17 @@ const getEmpresaStats = async (req, res) => {
 const getSuperadminStats = async (req, res) => {
   try {
     const empresas = await Company.find().sort({ createdAt: -1 });
-    // Poderia contar utilizadores também, mas apenas retornar a lista de empresas já serve o layout
+    const totalCompanies = empresas.length;
+    const activeCompanies = empresas.filter(emp => emp.isActive).length;
+    const totalClients = await Client.countDocuments(); // Soma de todos os clientes no sistema
+
     res.json({
-      empresas
+      empresas,
+      stats: {
+        totalCompanies,
+        activeCompanies,
+        totalClients
+      }
     });
   } catch (error) {
     console.error(error);

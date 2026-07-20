@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createCompany, toggleCompanyStatus } = require('../controllers/adminController');
+const { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany } = require('../controllers/adminController');
 const { protect, superadmin } = require('../middleware/authMiddleware');
 
 router.route('/companies')
@@ -8,5 +8,11 @@ router.route('/companies')
 
 router.route('/companies/:id/toggle-status')
   .put(protect, superadmin, toggleCompanyStatus);
+
+router.route('/companies/:id/plan')
+  .put(protect, superadmin, updateCompanyPlan);
+
+router.route('/companies/:id')
+  .delete(protect, superadmin, deleteCompany);
 
 module.exports = router;
