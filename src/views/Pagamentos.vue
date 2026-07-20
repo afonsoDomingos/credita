@@ -30,8 +30,8 @@
           <tr v-for="pagamento in pagamentos" :key="pagamento._id">
             <td>{{ new Date(pagamento.paymentDate).toLocaleDateString('pt-PT') }}</td>
             <td class="font-medium">{{ pagamento.loan && pagamento.loan.client ? pagamento.loan.client.name : 'N/A' }}</td>
-            <td>Empréstimo (Kz {{ pagamento.loan ? pagamento.loan.amount.toLocaleString() : '?' }})</td>
-            <td class="font-bold text-green">Kz {{ pagamento.amountPaid.toLocaleString() }}</td>
+            <td>Empréstimo (MT {{ pagamento.loan ? pagamento.loan.amount.toLocaleString() : '?' }})</td>
+            <td class="font-bold text-green">MT {{ pagamento.amountPaid.toLocaleString() }}</td>
             <td class="capitalize">{{ traduzirMetodo(pagamento.paymentMethod) }}</td>
             <td>
               <button class="btn-text" title="Ver Recibo">Ver Recibo</button>
@@ -59,7 +59,7 @@
             <select v-model="form.loanId" required class="form-select">
               <option value="" disabled>Escolha um empréstimo</option>
               <option v-for="emp in emprestimosAtivos" :key="emp._id" :value="emp._id">
-                {{ emp.client ? emp.client.name : 'Desconhecido' }} - Kz {{ emp.amount.toLocaleString() }}
+                {{ emp.client ? emp.client.name : 'Desconhecido' }} - MT {{ emp.amount.toLocaleString() }}
               </option>
             </select>
             <small class="text-xs text-muted" v-if="emprestimosAtivos.length === 0">Não há empréstimos ativos para pagar.</small>
@@ -67,7 +67,7 @@
 
           <div class="grid-2 gap-4">
             <div class="form-group">
-              <label>Valor Pago (Kz) *</label>
+              <label>Valor Pago (MT) *</label>
               <input type="number" v-model="form.amountPaid" required min="1" />
             </div>
             <div class="form-group">

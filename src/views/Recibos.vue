@@ -6,8 +6,8 @@
     </div>
 
     <div class="surface p-0 overflow-hidden no-print">
-      <div v-if="loading" class="p-6 text-center text-muted">
-        A carregar histórico de pagamentos...
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A carregar histórico de pagamentos..." />
       </div>
       
       <table class="data-table" v-else-if="payments.length > 0">
@@ -84,6 +84,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { Printer } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const payments = ref([]);
@@ -166,6 +168,10 @@ onMounted(() => {
 }
 
 @media print {
+  body {
+    background-color: white;
+  }
+  
   body * {
     visibility: hidden;
   }

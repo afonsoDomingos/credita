@@ -5,8 +5,8 @@
       <p class="text-muted text-sm">Acompanhe a saúde financeira da sua carteira de empréstimos.</p>
     </div>
 
-    <div v-if="loading" class="text-center p-8 text-muted">
-      A calcular estatísticas...
+    <div v-if="loading" class="loader-wrapper surface">
+      <Spinner message="A calcular estatísticas..." />
     </div>
 
     <div v-else>
@@ -75,6 +75,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { TrendingUp, Users, Wallet, CreditCard, Activity } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const loading = ref(true);
@@ -169,7 +171,12 @@ onMounted(() => {
 
 .progress-fill {
   height: 100%;
-  border-radius: 6px;
-  transition: width 1s ease-out;
+  background-color: #10B981;
+  border-radius: 8px;
+  transition: width 1s ease-in-out;
+}
+
+.loader-wrapper {
+  padding: 60px 0;
 }
 </style>

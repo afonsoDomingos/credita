@@ -41,12 +41,16 @@
         <router-view></router-view>
       </main>
     </div>
+    
+    <!-- Global Toast Notifications -->
+    <ToastList />
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
 import { Building2, LogOut } from '@lucide/vue';
+import ToastList from './ToastList.vue';
 const router = useRouter();
 
 const logout = () => {

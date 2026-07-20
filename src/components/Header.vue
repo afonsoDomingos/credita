@@ -25,22 +25,72 @@
       
       <div class="divider"></div>
       
-      <div class="user-profile">
+      <div class="user-profile" @click="toggleDropdown" ref="profileRef">
         <div class="user-info">
-          <span class="user-name">João Silva</span>
-          <span class="user-role">Administrador</span>
+          <span class="user-name">{{ user?.name || 'Administrador' }}</span>
+          <span class="user-role">{{ user?.role === 'superadmin' ? 'Superadmin' : 'Gestor' }}</span>
         </div>
-        <img src="https://ui-avatars.com/api/?name=João+Silva&background=2563EB&color=fff" alt="User Profile" class="avatar" />
+        <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Admin')}&background=2563EB&color=fff`" alt="User Profile" class="avatar" />
         <ChevronDown :size="16" class="dropdown-icon" />
+        
+        <!-- Dropdown Menu -->
+        <div class="profile-dropdown" v-if="showDropdown">
+          <router-link to="/app/perfil" class="dropdown-item" @click="showDropdown = false">
+            <User :size="16" /> O meu Perfil
+          </router-link>
+          <div class="dropdown-divider"></div>
+          <button @click="logout" class="dropdown-item text-red">
+            <LogOut :size="16" /> Terminar Sessão
+          </button>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
-import { Menu, Search, Bell, MessageSquare, ChevronDown } from '@lucide/vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { Menu, Search, Bell, MessageSquare, ChevronDown, User, LogOut } from '@lucide/vue';
 
 defineEmits(['toggle-mobile-sidebar']);
+
+const router = useRouter();
+const user = ref(null);
+const showDropdown = ref(false);
+const profileRef = ref(null);
+
+const loadUser = () => {
+  const userData = localStorage.getItem('user');
+  if (userData) {
+    user.value = JSON.parse(userData);
+  }
+};
+
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value;
+};
+
+const closeDropdown = (e) => {
+  if (profileRef.value && !profileRef.value.contains(e.target)) {
+    showDropdown.value = false;
+  }
+};
+
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  router.push('/login');
+};
+
+onMounted(() => {
+  loadUser();
+  document.addEventListener('click', closeDropdown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown);
+});
 </script>
 
 <style scoped>
@@ -196,6 +246,54 @@ defineEmits(['toggle-mobile-sidebar']);
   color: var(--text-muted);
 }
 
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 24px;
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  padding: 8px 0;
+  border: 1px solid var(--border-color);
+  z-index: 50;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-body);
+}
+
+.dropdown-item.text-red {
+  color: #DC2626;
+}
+
+.dropdown-item.text-red:hover {
+  background-color: #FEE2E2;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 8px 0;
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 0 16px;
@@ -211,6 +309,10 @@ defineEmits(['toggle-mobile-sidebar']);
   
   .user-info {
     display: none;
+  }
+  
+  .profile-dropdown {
+    right: 16px;
   }
 }
 </style>

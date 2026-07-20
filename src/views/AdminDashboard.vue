@@ -1,59 +1,59 @@
 <template>
   <div class="admin-dashboard">
-    <div class="header-actions flex justify-between items-center mb-6">
-      <h2 class="text-xl font-bold">Gestão de Empresas (Inquilinos)</h2>
+    <div class="header-actions">
+      <h2 class="page-title">Gestão de Empresas (Inquilinos)</h2>
       <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
     </div>
 
     <!-- System Health Banner -->
-    <div class="system-banner surface flex items-center justify-between mb-8 p-4 border-l-4 border-green-500 rounded-r-xl">
-      <div class="flex items-center gap-4">
-        <div class="bg-green-100 p-3 rounded-full text-green-600">
-          <Activity :size="24" />
+    <div class="system-banner surface">
+      <div class="banner-content">
+        <div class="banner-icon-bg">
+          <Activity :size="24" class="banner-icon" />
         </div>
-        <div>
-          <h3 class="font-bold text-gray-800">Estado do Sistema: 100% Operacional</h3>
-          <p class="text-sm text-gray-500">Todos os serviços de microcrédito estão a funcionar normalmente e sem interrupções.</p>
+        <div class="banner-text">
+          <h3>Estado do Sistema: 100% Operacional</h3>
+          <p>Todos os serviços de microcrédito estão a funcionar normalmente e sem interrupções.</p>
         </div>
       </div>
-      <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Atualizado agora</span>
+      <span class="banner-badge">Atualizado agora</span>
     </div>
 
     <div v-if="stats" class="stats-grid mb-8">
-      <div class="stat-card surface flex items-center justify-between shadow-sm">
-        <div>
-          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Total Empresas</h3>
-          <p class="text-4xl font-extrabold text-gray-800">{{ stats.totalCompanies }}</p>
+      <div class="stat-card surface shadow-sm">
+        <div class="stat-content">
+          <h3 class="stat-title">Total Empresas</h3>
+          <p class="stat-value text-gray-800">{{ stats.totalCompanies }}</p>
         </div>
-        <div class="bg-blue-100 p-4 rounded-2xl text-blue-600">
+        <div class="stat-icon-wrapper bg-blue-100 text-blue-600">
           <Building2 :size="32" />
         </div>
       </div>
       
-      <div class="stat-card surface flex items-center justify-between shadow-sm">
-        <div>
-          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Empresas Ativas</h3>
-          <p class="text-4xl font-extrabold text-green-500">{{ stats.activeCompanies }}</p>
+      <div class="stat-card surface shadow-sm">
+        <div class="stat-content">
+          <h3 class="stat-title">Empresas Ativas</h3>
+          <p class="stat-value text-green-500">{{ stats.activeCompanies }}</p>
         </div>
-        <div class="bg-green-100 p-4 rounded-2xl text-green-600">
+        <div class="stat-icon-wrapper bg-green-100 text-green-600">
           <Activity :size="32" />
         </div>
       </div>
       
-      <div class="stat-card surface flex items-center justify-between shadow-sm">
-        <div>
-          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Clientes Globais</h3>
-          <p class="text-4xl font-extrabold text-purple-600">{{ stats.totalClients }}</p>
+      <div class="stat-card surface shadow-sm">
+        <div class="stat-content">
+          <h3 class="stat-title">Clientes Globais</h3>
+          <p class="stat-value text-purple-600">{{ stats.totalClients }}</p>
         </div>
-        <div class="bg-purple-100 p-4 rounded-2xl text-purple-600">
+        <div class="stat-icon-wrapper bg-purple-100 text-purple-600">
           <Users :size="32" />
         </div>
       </div>
     </div>
 
     <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="p-6 text-center text-muted">
-        A carregar empresas...
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A carregar empresas do sistema..." />
       </div>
       
       <table class="companies-table" v-else-if="empresas.length > 0">
@@ -69,8 +69,8 @@
         <tbody>
           <tr v-for="empresa in empresas" :key="empresa._id" class="table-row">
             <td>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
+              <div class="company-name-cell">
+                <div class="avatar-circle">
                   {{ empresa.name.charAt(0).toUpperCase() }}
                 </div>
                 <span class="font-bold text-gray-800">{{ empresa.name }}</span>
@@ -78,18 +78,18 @@
             </td>
             <td class="text-gray-600">{{ empresa.nif || 'N/A' }}</td>
             <td>
-              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-gray-200 text-gray-600">
+              <span class="plan-badge">
                 {{ empresa.subscriptionPlan }}
               </span>
             </td>
             <td>
-              <span class="badge" :class="empresa.isActive ? 'badge-active' : 'badge-inactive'">
-                <div class="w-2 h-2 rounded-full mr-2 inline-block" :class="empresa.isActive ? 'bg-green-500' : 'bg-red-500'"></div>
+              <span class="status-badge" :class="empresa.isActive ? 'badge-active' : 'badge-inactive'">
+                <div class="status-dot" :class="empresa.isActive ? 'bg-green-500' : 'bg-red-500'"></div>
                 {{ empresa.isActive ? 'Ativa' : 'Inativa' }}
               </span>
             </td>
             <td class="text-right">
-              <div class="flex justify-end gap-2">
+              <div class="action-buttons">
                 <button class="action-btn text-blue hover-bg-blue" @click="openPlanModal(empresa)" title="Editar Plano">
                   <Edit :size="18" />
                 </button>
@@ -199,6 +199,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Building2, Activity, Users, Edit, Power, Trash2 } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const empresas = ref([]);
@@ -314,22 +315,107 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+/* System Banner */
+.system-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  border-left: 6px solid #10B981;
+  border-radius: 0 16px 16px 0;
+}
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.banner-icon-bg {
+  background-color: #DCFCE7;
+  color: #16A34A;
+  padding: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.banner-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1F2937;
+}
+.banner-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6B7280;
+}
+.banner-badge {
+  background-color: #F0FDF4;
+  color: #16A34A;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
+  margin-bottom: 32px;
 }
 .stat-card {
   padding: 30px;
   border-radius: 20px;
   border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+.stat-title {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat-value {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+.stat-icon-wrapper {
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-gray-800 { color: #1F2937; }
 .text-green-500 { color: #10B981; }
 .text-purple-600 { color: #9333EA; }
 .bg-blue-100 { background-color: #DBEAFE; }
 .bg-green-100 { background-color: #DCFCE7; }
 .bg-purple-100 { background-color: #F3E8FF; }
 
+/* Table styles */
 .companies-table {
   width: 100%;
   border-collapse: separate;
@@ -346,23 +432,53 @@ onMounted(() => {
   background-color: #f8fafc;
 }
 
-.companies-table th {
-  background-color: var(--bg-body);
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.875rem;
+.company-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.capitalize {
-  text-transform: capitalize;
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 
-.badge {
-  padding: 4px 10px;
-  border-radius: 12px;
+.plan-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #E2E8F0;
+  color: #475569;
 }
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.bg-green-500 { background-color: #10B981; }
+.bg-red-500 { background-color: #EF4444; }
 
 .badge-active {
   background-color: #DCFCE7;
@@ -372,6 +488,12 @@ onMounted(() => {
 .badge-inactive {
   background-color: #FEE2E2;
   color: #DC2626;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .text-green { color: #16A34A; }
@@ -452,4 +574,8 @@ onMounted(() => {
 }
 
 .border-b { border-bottom: 1px solid var(--border-color); }
+
+.loader-wrapper {
+  padding: 60px 0;
+}
 </style>

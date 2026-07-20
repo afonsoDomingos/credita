@@ -13,7 +13,9 @@
 
     <!-- Tabela de Empréstimos -->
     <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="p-6 text-center text-muted">A carregar empréstimos...</div>
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A carregar empréstimos..." />
+      </div>
       
       <table v-else-if="emprestimos.length > 0" class="data-table">
         <thead>
@@ -29,7 +31,7 @@
         <tbody>
           <tr v-for="emp in emprestimos" :key="emp._id">
             <td class="font-medium">{{ emp.client ? emp.client.name : 'Desconhecido' }}</td>
-            <td class="font-bold">Kz {{ emp.amount.toLocaleString() }}</td>
+            <td class="font-bold">MT {{ emp.amount.toLocaleString() }}</td>
             <td>{{ emp.interestRate }}%</td>
             <td>{{ new Date(emp.dueDate).toLocaleDateString('pt-PT') }}</td>
             <td>
@@ -69,7 +71,7 @@
 
           <div class="grid-2 gap-4">
             <div class="form-group">
-              <label>Montante (Kz) *</label>
+              <label>Montante (MT) *</label>
               <input type="number" v-model="form.amount" required min="1" />
             </div>
             <div class="form-group">
@@ -100,6 +102,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Plus, X } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const emprestimos = ref([]);
@@ -201,7 +204,11 @@ onMounted(() => {
 }
 .badge-active { background-color: #DBEAFE; color: #2563EB; }
 .badge-paid { background-color: #DCFCE7; color: #16A34A; }
-.badge-danger { background-color: #FEE2E2; color: #DC2626; }
+.badge-defaulted { background-color: #FEE2E2; color: #DC2626; }
+
+.loader-wrapper {
+  padding: 60px 0;
+}
 
 /* Modal Styles */
 .modal-overlay {

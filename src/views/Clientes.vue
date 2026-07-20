@@ -13,7 +13,9 @@
 
     <!-- Tabela de Clientes -->
     <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="p-6 text-center text-muted">A carregar clientes...</div>
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A carregar clientes da base de dados..." />
+      </div>
       
       <table v-else-if="clientes.length > 0" class="data-table">
         <thead>
@@ -50,8 +52,15 @@
         </tbody>
       </table>
       
-      <div v-else class="p-6 text-center text-muted">
-        Nenhum cliente cadastrado. Clique em "Novo Cliente" para começar.
+      <div v-else class="empty-state">
+        <div class="empty-icon-wrapper">
+          <Users :size="48" class="text-gray-400" />
+        </div>
+        <h3 class="empty-title">Nenhum cliente cadastrado</h3>
+        <p class="empty-desc">A sua base de dados de clientes está vazia. Comece por adicionar o seu primeiro cliente.</p>
+        <button class="btn-primary mt-4" @click="openModal">
+          <Plus :size="18" style="display:inline; margin-right:8px;" /> Adicionar Cliente
+        </button>
       </div>
     </div>
 
@@ -98,9 +107,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Plus, Edit2, Trash2, X } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
+import { useToast } from '../composables/useToast';
 import api from '../api';
 
 const clientes = ref([]);
+const toast = useToast();
 const loading = ref(true);
 const showModal = ref(false);
 const isEditing = ref(false);
@@ -154,25 +166,29 @@ const salvarCliente = async () => {
   try {
     if (isEditing.value) {
       await api.put(`/clients/${form.value.id}`, form.value);
+      toast.success('Cliente atualizado com sucesso!');
     } else {
       await api.post('/clients', form.value);
+      toast.success('Novo cliente cadastrado com sucesso!');
     }
     await loadClientes();
     closeModal();
   } catch (error) {
+    toast.error(error.response?.data?.message || 'Erro ao guardar cliente.');
     errorMsg.value = error.response?.data?.message || 'Erro ao guardar cliente.';
   } finally {
     saving.value = false;
   }
 };
 
-const apagarCliente = async (id) => {
-  if (confirm('Tem a certeza que deseja apagar este cliente? Esta ação não pode ser desfeita.')) {
+const apagarCliente = async (cliente) => {
+  if (confirm(`Tem a certeza que deseja apagar o cliente ${cliente.name}?`)) {
     try {
-      await api.delete(`/clients/${id}`);
+      await api.delete(`/clients/${cliente._id}`);
+      toast.success('Cliente removido com sucesso!');
       await loadClientes();
     } catch (error) {
-      alert('Erro ao apagar cliente.');
+      toast.error('Erro ao apagar cliente.');
     }
   }
 };
@@ -251,10 +267,63 @@ onMounted(() => {
 }
 .form-group input:focus { border-color: var(--primary-color); }
 
+.form-select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  font-family: inherit;
+  background-color: #fff;
+}
+.form-select:focus { border-color: var(--primary-color); }
+
 .error-msg {
   color: #DC2626;
   font-size: 0.875rem;
 }
+
+.loader-wrapper {
+  padding: 60px 0;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #F1F5F9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #94A3B8;
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.empty-desc {
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.text-gray-400 { color: #94A3B8; }
+.mt-4 { margin-top: 16px; }
 
 .btn-icon.text-blue { color: #2563EB; }
 .btn-icon.text-blue:hover { background-color: #DBEAFE; }

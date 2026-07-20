@@ -15,6 +15,9 @@
       class="mobile-overlay" 
       @click="mobileSidebarOpen = false"
     ></div>
+    
+    <!-- Global Toast Notifications -->
+    <ToastList />
   </div>
 </template>
 
@@ -22,6 +25,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import Sidebar from './Sidebar.vue';
 import Header from './Header.vue';
+import ToastList from './ToastList.vue';
 
 const sidebarCollapsed = ref(false);
 const mobileSidebarOpen = ref(false);

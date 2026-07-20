@@ -6,7 +6,9 @@
     </div>
 
     <div class="surface settings-card">
-      <div v-if="loading" class="text-center text-muted">A carregar definições...</div>
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A carregar definições..." />
+      </div>
       
       <form v-else @submit.prevent="salvarDefinicoes" class="settings-form">
         <div class="profile-header mb-8">
@@ -54,9 +56,9 @@
         <div v-if="successMsg" class="success-msg mt-6">{{ successMsg }}</div>
         <div v-if="errorMsg" class="error-msg mt-6">{{ errorMsg }}</div>
 
-        <div class="mt-8">
-          <button type="submit" class="btn-primary" :disabled="saving">
-            {{ saving ? 'A guardar...' : 'Guardar Alterações' }}
+        <div class="mt-8 border-t pt-6">
+          <button type="submit" class="btn-primary btn-large w-full-mobile" :disabled="saving">
+            {{ saving ? 'A guardar...' : 'Guardar Todas as Alterações' }}
           </button>
         </div>
       </form>
@@ -66,8 +68,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import Spinner from '../components/Spinner.vue';
+import { useToast } from '../composables/useToast';
 import api from '../api';
 
+const toast = useToast();
 const loading = ref(true);
 const saving = ref(false);
 const successMsg = ref('');
@@ -126,9 +131,9 @@ const salvarDefinicoes = async () => {
     form.value.logoUrl = data.logoUrl; // Update with new remote URL
     logoFile.value = null; // Clear pending file
     
-    successMsg.value = 'Definições atualizadas com sucesso!';
-    setTimeout(() => { successMsg.value = ''; }, 3000);
+    toast.success('Definições atualizadas com sucesso!');
   } catch (error) {
+    toast.error(error.response?.data?.message || 'Erro ao guardar definições.');
     errorMsg.value = error.response?.data?.message || 'Erro ao guardar definições.';
   } finally {
     saving.value = false;
@@ -227,6 +232,42 @@ onMounted(() => {
 
 .btn-secondary:hover {
   background-color: var(--bg-body);
+}
+
+.upgrade-btn {
+  background-color: #FACC15;
+  color: #854D0E;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-large {
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  width: auto;
+  min-width: 200px;
+}
+
+.border-t {
+  border-top: 1px solid var(--border-color);
+}
+.pt-6 {
+  padding-top: 24px;
+}
+
+.upgrade-btn:hover {
+  background-color: #FDE047;
+  transform: translateY(-1px);
+}
+
+.loader-wrapper {
+  padding: 60px 0;
 }
 
 @media (max-width: 768px) {

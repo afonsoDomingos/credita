@@ -6,8 +6,8 @@
     </div>
 
     <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="p-6 text-center text-muted">
-        A gerar relatório...
+      <div v-if="loading" class="loader-wrapper">
+        <Spinner message="A gerar relatório..." />
       </div>
       
       <div v-else>
@@ -63,6 +63,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const loans = ref([]);
@@ -169,8 +170,14 @@ onMounted(() => {
 .text-blue-dark { color: #1E3A8A; }
 .bg-green { background-color: #BBF7D0; }
 .text-green-dark { color: #14532D; }
-.bg-red { background-color: #FECACA; }
-.text-red-dark { color: #7F1D1D; }
+.badge-danger {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.loader-wrapper {
+  padding: 60px 0;
+}
 
 .btn-secondary {
   padding: 8px 16px;

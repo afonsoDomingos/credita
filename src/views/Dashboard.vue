@@ -103,7 +103,7 @@
             <div class="list-item payment-item" v-for="i in 4" :key="'venc'+i">
               <div class="flex justify-between items-center mb-1">
                 <span class="font-medium text-sm">Parcela #{{ i }} - Cliente {{ i }}</span>
-                <span class="font-bold text-sm text-orange">Kz 50.000</span>
+                <span class="font-bold text-sm text-orange">MT 50.000</span>
               </div>
               <div class="flex justify-between items-center text-xs text-muted">
                 <span class="flex items-center gap-1"><Calendar :size="12" /> Vence em {{ i }} dias</span>
@@ -123,7 +123,7 @@
             <div class="list-item payment-item" v-for="i in 4" :key="'pag'+i">
               <div class="flex justify-between items-center mb-1">
                 <span class="font-medium text-sm">João Oliveira</span>
-                <span class="font-bold text-sm text-green">+ Kz 25.000</span>
+                <span class="font-bold text-sm text-green">+ MT 25.000</span>
               </div>
               <div class="flex justify-between items-center text-xs text-muted">
                 <span>Recebido via Transf.</span>
@@ -159,8 +159,8 @@ const loadDashboard = async () => {
     stats.value = [
       { title: 'Total de Clientes', value: data.totalClientes, trend: null, trendValue: 'Cadastrados', icon: Users, colorClass: 'bg-blue-light text-blue' },
       { title: 'Empréstimos Ativos', value: data.totalEmprestimosAtivos, trend: null, trendValue: 'Em curso', icon: Banknote, colorClass: 'bg-indigo-light text-indigo' },
-      { title: 'Valor Emprestado', value: `Kz ${data.valorEmprestado.toLocaleString()}`, trend: null, trendValue: 'Total', icon: Wallet, colorClass: 'bg-purple-light text-purple' },
-      { title: 'Valor Recebido', value: `Kz ${data.valorRecebido.toLocaleString()}`, trend: null, trendValue: 'Total', icon: CreditCard, colorClass: 'bg-green-light text-green' },
+      { title: 'Valor Emprestado', value: `MT ${data.valorEmprestado.toLocaleString()}`, trend: null, trendValue: 'Total', icon: Wallet, colorClass: 'bg-purple-light text-purple' },
+      { title: 'Valor Recebido', value: `MT ${data.valorRecebido.toLocaleString()}`, trend: null, trendValue: 'Total', icon: CreditCard, colorClass: 'bg-green-light text-green' },
       { title: 'Plano', value: data.plano.toUpperCase(), trend: null, trendValue: 'Assinatura', icon: CheckCircle2, colorClass: 'bg-green-light text-green' },
     ];
   } catch (error) {
