@@ -21,11 +21,13 @@ const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/admin', adminRoutes);
 

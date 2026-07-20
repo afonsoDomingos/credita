@@ -2,8 +2,8 @@
   <div class="login-container">
     <div class="login-card surface">
       <div class="login-header">
-        <h1 class="text-primary font-bold text-2xl">Etako</h1>
-        <p class="text-muted text-sm mt-2">Bem-vindo de volta! Inicie sessão na sua conta.</p>
+        <h1 class="text-primary font-bold text-2xl">Microcrédito</h1>
+        <p class="text-muted text-sm mt-2">Inicie sessão na sua conta de Microcrédito para gerir os seus microcréditos.</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="login-form">

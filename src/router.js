@@ -6,6 +6,7 @@ import Login from './views/Login.vue';
 import AdminDashboard from './views/AdminDashboard.vue';
 import Clientes from './views/Clientes.vue';
 import Emprestimos from './views/Emprestimos.vue';
+import Pagamentos from './views/Pagamentos.vue';
 import Empresa from './views/Empresa.vue';
 
 const routes = [
@@ -22,7 +23,7 @@ const routes = [
       { path: '', name: 'Dashboard', component: Dashboard },
       { path: 'clientes', name: 'Clientes', component: Clientes },
       { path: 'emprestimos', name: 'Empréstimos', component: Emprestimos },
-      { path: 'pagamentos', name: 'Pagamentos', component: () => import('./views/Placeholder.vue') },
+      { path: 'pagamentos', name: 'Pagamentos', component: Pagamentos },
       { path: 'calendario', name: 'Calendário', component: () => import('./views/Placeholder.vue') },
       { path: 'relatorios', name: 'Relatórios', component: () => import('./views/Placeholder.vue') },
       { path: 'recibos', name: 'Recibos', component: () => import('./views/Placeholder.vue') },
