@@ -5,18 +5,49 @@
       <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
     </div>
 
-    <div v-if="stats" class="stats-grid mb-6">
-      <div class="stat-card surface">
-        <h3 class="text-muted text-sm font-semibold mb-1">Total Empresas</h3>
-        <p class="text-3xl font-bold">{{ stats.totalCompanies }}</p>
+    <!-- System Health Banner -->
+    <div class="system-banner surface flex items-center justify-between mb-8 p-4 border-l-4 border-green-500 rounded-r-xl">
+      <div class="flex items-center gap-4">
+        <div class="bg-green-100 p-3 rounded-full text-green-600">
+          <Activity :size="24" />
+        </div>
+        <div>
+          <h3 class="font-bold text-gray-800">Estado do Sistema: 100% Operacional</h3>
+          <p class="text-sm text-gray-500">Todos os serviços de microcrédito estão a funcionar normalmente e sem interrupções.</p>
+        </div>
       </div>
-      <div class="stat-card surface">
-        <h3 class="text-muted text-sm font-semibold mb-1">Empresas Ativas</h3>
-        <p class="text-3xl font-bold text-green-500">{{ stats.activeCompanies }}</p>
+      <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Atualizado agora</span>
+    </div>
+
+    <div v-if="stats" class="stats-grid mb-8">
+      <div class="stat-card surface flex items-center justify-between shadow-sm">
+        <div>
+          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Total Empresas</h3>
+          <p class="text-4xl font-extrabold text-gray-800">{{ stats.totalCompanies }}</p>
+        </div>
+        <div class="bg-blue-100 p-4 rounded-2xl text-blue-600">
+          <Building2 :size="32" />
+        </div>
       </div>
-      <div class="stat-card surface">
-        <h3 class="text-muted text-sm font-semibold mb-1">Total Clientes Globais</h3>
-        <p class="text-3xl font-bold text-blue-500">{{ stats.totalClients }}</p>
+      
+      <div class="stat-card surface flex items-center justify-between shadow-sm">
+        <div>
+          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Empresas Ativas</h3>
+          <p class="text-4xl font-extrabold text-green-500">{{ stats.activeCompanies }}</p>
+        </div>
+        <div class="bg-green-100 p-4 rounded-2xl text-green-600">
+          <Activity :size="32" />
+        </div>
+      </div>
+      
+      <div class="stat-card surface flex items-center justify-between shadow-sm">
+        <div>
+          <h3 class="text-muted text-sm font-semibold mb-1 text-gray-500 uppercase tracking-wider">Clientes Globais</h3>
+          <p class="text-4xl font-extrabold text-purple-600">{{ stats.totalClients }}</p>
+        </div>
+        <div class="bg-purple-100 p-4 rounded-2xl text-purple-600">
+          <Users :size="32" />
+        </div>
       </div>
     </div>
 
@@ -32,26 +63,44 @@
             <th>NIF</th>
             <th>Plano</th>
             <th>Status</th>
-            <th>Ações</th>
+            <th class="text-right">Ações</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="empresa in empresas" :key="empresa._id">
-            <td class="font-medium">{{ empresa.name }}</td>
-            <td>{{ empresa.nif || 'N/A' }}</td>
-            <td class="capitalize">{{ empresa.subscriptionPlan }}</td>
+          <tr v-for="empresa in empresas" :key="empresa._id" class="table-row">
             <td>
-              <span class="badge" :class="empresa.isActive ? 'badge-active' : 'badge-inactive'">
-                {{ empresa.isActive ? 'Ativa' : 'Inativa' }}
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
+                  {{ empresa.name.charAt(0).toUpperCase() }}
+                </div>
+                <span class="font-bold text-gray-800">{{ empresa.name }}</span>
+              </div>
+            </td>
+            <td class="text-gray-600">{{ empresa.nif || 'N/A' }}</td>
+            <td>
+              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-gray-200 text-gray-600">
+                {{ empresa.subscriptionPlan }}
               </span>
             </td>
             <td>
-              <button class="btn-text" @click="openPlanModal(empresa)">Editar Plano</button>
-              <button class="btn-text" @click="toggleStatus(empresa)" :disabled="togglingId === empresa._id" :class="empresa.isActive ? 'text-red' : 'text-green'">
-                <span v-if="togglingId === empresa._id">...</span>
-                <span v-else>{{ empresa.isActive ? 'Suspender' : 'Ativar' }}</span>
-              </button>
-              <button class="btn-text text-red" @click="apagarEmpresa(empresa)" title="Apagar Empresa">Apagar</button>
+              <span class="badge" :class="empresa.isActive ? 'badge-active' : 'badge-inactive'">
+                <div class="w-2 h-2 rounded-full mr-2 inline-block" :class="empresa.isActive ? 'bg-green-500' : 'bg-red-500'"></div>
+                {{ empresa.isActive ? 'Ativa' : 'Inativa' }}
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="flex justify-end gap-2">
+                <button class="action-btn text-blue hover-bg-blue" @click="openPlanModal(empresa)" title="Editar Plano">
+                  <Edit :size="18" />
+                </button>
+                <button class="action-btn hover-bg-gray" @click="toggleStatus(empresa)" :disabled="togglingId === empresa._id" :class="empresa.isActive ? 'text-orange' : 'text-green'" :title="empresa.isActive ? 'Suspender' : 'Ativar'">
+                  <span v-if="togglingId === empresa._id" class="animate-pulse">...</span>
+                  <Power v-else :size="18" />
+                </button>
+                <button class="action-btn text-red hover-bg-red" @click="apagarEmpresa(empresa)" title="Apagar Empresa">
+                  <Trash2 :size="18" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -149,6 +198,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { Building2, Activity, Users, Edit, Power, Trash2 } from '@lucide/vue';
 import api from '../api';
 
 const empresas = ref([]);
@@ -266,24 +316,34 @@ onMounted(() => {
 <style scoped>
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
 }
 .stat-card {
-  padding: 24px;
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 .text-green-500 { color: #10B981; }
-.text-blue-500 { color: #3B82F6; }
+.text-purple-600 { color: #9333EA; }
+.bg-blue-100 { background-color: #DBEAFE; }
+.bg-green-100 { background-color: #DCFCE7; }
+.bg-purple-100 { background-color: #F3E8FF; }
 
 .companies-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .companies-table th, .companies-table td {
-  padding: 16px 20px;
+  padding: 20px 24px;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-row:hover {
+  background-color: #f8fafc;
 }
 
 .companies-table th {
@@ -316,18 +376,30 @@ onMounted(() => {
 
 .text-green { color: #16A34A; }
 
-.btn-text {
-  background: none;
+.action-btn {
+  background: transparent;
   border: none;
-  color: var(--primary-color);
-  font-weight: 500;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  margin-right: 12px;
+  transition: all 0.2s;
+  color: var(--text-muted);
 }
-.btn-text.text-red {
-  color: #DC2626;
-}
-.btn-text:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-btn:hover { transform: translateY(-2px); }
+.text-blue { color: #3B82F6; }
+.text-red { color: #EF4444; }
+.text-green { color: #10B981; }
+.text-orange { color: #F97316; }
+
+.hover-bg-blue:hover { background-color: #DBEAFE; color: #1D4ED8; }
+.hover-bg-red:hover { background-color: #FEE2E2; color: #B91C1C; }
+.hover-bg-gray:hover { background-color: #F1F5F9; color: #0F172A; }
+
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* Modal Styles */
 .modal-overlay {

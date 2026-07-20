@@ -12,7 +12,8 @@
           <ul>
             <li>
               <router-link to="/admin" class="nav-item" active-class="active">
-                <span class="nav-text">Empresas</span>
+                <Building2 :size="20" class="mr-3" />
+                <span class="nav-text">Empresas (Inquilinos)</span>
               </router-link>
             </li>
           </ul>
@@ -21,6 +22,7 @@
           <ul>
             <li>
               <a href="#" @click.prevent="logout" class="nav-item logout">
+                <LogOut :size="20" class="mr-3" />
                 <span class="nav-text">Terminar Sessão</span>
               </a>
             </li>
@@ -44,6 +46,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { Building2, LogOut } from '@lucide/vue';
 const router = useRouter();
 
 const logout = () => {
@@ -82,17 +85,30 @@ const logout = () => {
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  margin: 0 16px;
+  padding: 12px 16px;
+  margin: 4px 16px;
   border-radius: var(--radius-md);
   color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
+  transition: all 0.2s;
 }
 
-.nav-item:hover, .nav-item.active {
+.mr-3 { margin-right: 12px; }
+
+.nav-item:hover {
   background-color: var(--bg-body);
-  color: var(--primary-color);
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: #EFF6FF;
+  color: #3B82F6;
+}
+
+.nav-item.logout:hover {
+  background-color: #FEF2F2;
+  color: #DC2626;
 }
 
 .header {
