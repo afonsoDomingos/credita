@@ -4,7 +4,7 @@
       <!-- SIGN UP FORM -->
       <div class="form-container sign-up-container">
         <form @submit.prevent="handleRegister">
-          <h1 class="logo-title">Criar Conta</h1>
+          <img src="/logo.png" alt="Microcrédito" style="height: 60px; margin-bottom: 10px; object-fit: contain;" />
           <p class="subtitle">Registe a sua empresa de Microcrédito</p>
           
           <input type="text" placeholder="Nome da Empresa" v-model="regForm.companyName" required />
@@ -23,7 +23,7 @@
       <!-- SIGN IN FORM -->
       <div class="form-container sign-in-container">
         <form @submit.prevent="handleLogin">
-          <h1 class="logo-title">Microcrédito</h1>
+          <img src="/logo.png" alt="Microcrédito" style="height: 60px; margin-bottom: 10px; object-fit: contain;" />
           <p class="subtitle">Bem-vindo de volta! Inicie sessão.</p>
           
           <input type="email" placeholder="Email" v-model="loginForm.email" required />

@@ -4,7 +4,7 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="logo-area">
-          <h2 class="font-bold text-lg text-primary">Etako Admin</h2>
+          <img src="/logo.png" alt="Microcrédito Admin" style="height: 40px; object-fit: contain;" />
         </div>
       </div>
       <div class="sidebar-content">

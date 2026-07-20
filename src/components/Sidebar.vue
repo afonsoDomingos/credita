@@ -2,18 +2,10 @@
   <aside :class="['sidebar', { 'collapsed': collapsed, 'mobile-open': mobileOpen }]">
     <div class="sidebar-header">
       <div class="logo-area" v-if="!collapsed">
-        <div class="logo-icon flex items-center justify-center">
-          <Building2 color="white" :size="20" />
-        </div>
-        <div class="company-info">
-          <h2 class="font-bold text-lg">Etako</h2>
-          <p class="text-xs text-muted">Afonso & Cia</p>
-        </div>
+        <img src="/logo.png" alt="Microcrédito" style="height: 40px; object-fit: contain;" />
       </div>
-      <div class="logo-area-collapsed" v-else>
-        <div class="logo-icon flex items-center justify-center">
-          <Building2 color="white" :size="20" />
-        </div>
+      <div class="logo-area-collapsed" v-else style="display: flex; justify-content: center; width: 100%;">
+        <img src="/logo.png" alt="Microcrédito" style="height: 28px; object-fit: contain;" />
       </div>
       <button class="collapse-btn desktop-only" @click="$emit('toggle')">
         <ChevronLeft v-if="!collapsed" :size="20" />
