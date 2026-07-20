@@ -14,8 +14,25 @@ const getSettings = async (req, res) => {
 };
 
 const updateSetting = async (req, res) => {
-  const { key, value } = req.body;
   try {
+    if (Array.isArray(req.body.settings)) {
+      const results = [];
+      for (const { key, value } of req.body.settings) {
+        let setting = await SystemSetting.findOne({ key });
+        if (setting) {
+          setting.value = value;
+          setting.updatedAt = Date.now();
+          await setting.save();
+        } else {
+          setting = await SystemSetting.create({ key, value });
+        }
+        results.push(setting);
+      }
+      return res.json(results);
+    }
+    
+    // Fallback for single key/value
+    const { key, value } = req.body;
     let setting = await SystemSetting.findOne({ key });
     if (setting) {
       setting.value = value;

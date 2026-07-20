@@ -322,9 +322,36 @@
         
         <form @submit.prevent="salvarSystemSettings" class="modal-form">
           <div class="form-group">
-            <label>Link de Checkout (Stripe, Pagaqui, etc.)</label>
+            <label>Link de Checkout Automático (Stripe, Pagaqui, etc.)</label>
             <input type="url" v-model="systemForm.checkout_link" placeholder="https://..." />
             <small class="text-muted mt-1">Este link aparecerá nas empresas para pagamento automático online.</small>
+          </div>
+
+          <div class="divider my-4 border-b"></div>
+          <h3 class="font-bold text-sm mb-2 text-blue-600">Dados para Pagamento Manual</h3>
+
+          <div class="form-group">
+            <label>Número M-Pesa / E-Mola</label>
+            <input type="text" v-model="systemForm.mpesa_number" placeholder="Ex: +258 84 123 4567" />
+          </div>
+
+          <div class="form-group">
+            <label>Conta Bancária / NIB (BIM ou outro)</label>
+            <input type="text" v-model="systemForm.bank_account" placeholder="Ex: 00123456789" />
+          </div>
+
+          <div class="form-group">
+            <label>Nome do Titular da Conta</label>
+            <input type="text" v-model="systemForm.account_holder" placeholder="Ex: Etako Technologies" />
+          </div>
+
+          <div class="divider my-4 border-b"></div>
+          <h3 class="font-bold text-sm mb-2 text-green-600">Apoio ao Cliente</h3>
+
+          <div class="form-group">
+            <label>Número de WhatsApp para Suporte</label>
+            <input type="text" v-model="systemForm.support_whatsapp" placeholder="Ex: 258840000000 (Sem o +)" />
+            <small class="text-muted mt-1">Coloque apenas os números, código do país incluído.</small>
           </div>
 
           <div class="modal-actions mt-6 flex justify-end gap-3">
@@ -380,7 +407,13 @@ const form = ref({
   password: ''
 });
 
-const systemForm = ref({ checkout_link: '' });
+const systemForm = ref({ 
+  checkout_link: '',
+  mpesa_number: '',
+  bank_account: '',
+  account_holder: '',
+  support_whatsapp: ''
+});
 
 const loadEmpresas = async () => {
   loading.value = true;
@@ -530,6 +563,10 @@ const openSystemSettingsModal = async () => {
   try {
     const { data } = await api.get('/system/settings');
     systemForm.value.checkout_link = data.checkout_link || '';
+    systemForm.value.mpesa_number = data.mpesa_number || '';
+    systemForm.value.bank_account = data.bank_account || '';
+    systemForm.value.account_holder = data.account_holder || '';
+    systemForm.value.support_whatsapp = data.support_whatsapp || '';
     showSystemSettingsModal.value = true;
   } catch (error) {
     toast.error('Erro ao carregar definições de sistema.');
@@ -543,10 +580,16 @@ const closeSystemSettingsModal = () => {
 const salvarSystemSettings = async () => {
   saving.value = true;
   try {
-    await api.put('/admin/system/settings', {
-      key: 'checkout_link',
-      value: systemForm.value.checkout_link
-    });
+    // Send array of settings
+    const settingsArray = [
+      { key: 'checkout_link', value: systemForm.value.checkout_link },
+      { key: 'mpesa_number', value: systemForm.value.mpesa_number },
+      { key: 'bank_account', value: systemForm.value.bank_account },
+      { key: 'account_holder', value: systemForm.value.account_holder },
+      { key: 'support_whatsapp', value: systemForm.value.support_whatsapp }
+    ];
+    
+    await api.put('/admin/system/settings', { settings: settingsArray });
     toast.success('Definições guardadas com sucesso.');
     closeSystemSettingsModal();
   } catch (error) {
@@ -984,5 +1027,24 @@ onMounted(() => {
 .quick-badge:hover {
   border-color: #3B82F6;
   color: #3B82F6;
+}
+
+/* Mobile Responsiveness for Support Chat */
+@media (max-width: 768px) {
+  .support-container {
+    flex-direction: column;
+    height: auto;
+  }
+  .inbox-list {
+    width: 100%;
+    height: 200px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .chat-area {
+    height: 450px;
+  }
+  .message-wrapper {
+    max-width: 90%;
+  }
 }
 </style>

@@ -81,9 +81,9 @@
             </div>
             <div class="account-details flex-1">
               <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa / E-Mola</span>
-              <span class="account-number text-lg font-black text-gray-800">+258 84 123 4567</span>
+              <span class="account-number text-lg font-black text-gray-800">{{ mpesaNumber }}</span>
             </div>
-            <button class="copy-btn" title="Copiar" @click="copyText('+258841234567')"><Copy :size="18"/></button>
+            <button class="copy-btn" title="Copiar" @click="copyText(mpesaNumber)"><Copy :size="18"/></button>
           </div>
 
           <div class="account-tile hover-lift">
@@ -92,14 +92,14 @@
             </div>
             <div class="account-details flex-1">
               <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">Conta Bancária (BIM)</span>
-              <span class="account-number text-lg font-black text-gray-800">00123456789</span>
+              <span class="account-number text-lg font-black text-gray-800">{{ bankAccount }}</span>
             </div>
-            <button class="copy-btn" title="Copiar" @click="copyText('00123456789')"><Copy :size="18"/></button>
+            <button class="copy-btn" title="Copiar" @click="copyText(bankAccount)"><Copy :size="18"/></button>
           </div>
           
           <div class="titular-box mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
             <span class="text-gray-500 text-sm font-medium">Titular da Conta:</span>
-            <span class="font-bold text-gray-800 text-sm bg-white py-1 px-3 rounded-lg shadow-sm">Etako Technologies</span>
+            <span class="font-bold text-gray-800 text-sm bg-white py-1 px-3 rounded-lg shadow-sm">{{ accountHolder }}</span>
           </div>
         </div>
         
@@ -113,7 +113,7 @@
               <p class="text-blue-700 text-xs font-medium">Fale connosco no WhatsApp</p>
             </div>
           </div>
-          <a href="https://wa.me/258840000000" target="_blank" class="whatsapp-btn font-bold text-xs">
+          <a :href="`https://wa.me/${supportWhatsapp}`" target="_blank" class="whatsapp-btn font-bold text-xs">
             Contactar
           </a>
         </div>
@@ -178,6 +178,11 @@ const status = ref('active');
 const nextDate = ref(null);
 const checkoutLink = ref(null);
 
+const mpesaNumber = ref('+258 84 123 4567');
+const bankAccount = ref('00123456789');
+const accountHolder = ref('Etako Technologies');
+const supportWhatsapp = ref('258840000000');
+
 const receiptFile = ref(null);
 const notes = ref('');
 
@@ -213,6 +218,10 @@ const loadData = async () => {
     }
     
     checkoutLink.value = sysRes.data.checkout_link || null;
+    mpesaNumber.value = sysRes.data.mpesa_number || '+258 84 123 4567';
+    bankAccount.value = sysRes.data.bank_account || '00123456789';
+    accountHolder.value = sysRes.data.account_holder || 'Etako Technologies';
+    supportWhatsapp.value = sysRes.data.support_whatsapp || '258840000000';
     
   } catch (error) {
     toast.error('Erro ao carregar dados da assinatura.');
