@@ -8,6 +8,9 @@ import Clientes from './views/Clientes.vue';
 import Emprestimos from './views/Emprestimos.vue';
 import Pagamentos from './views/Pagamentos.vue';
 import Empresa from './views/Empresa.vue';
+import Recibos from './views/Recibos.vue';
+import Estatisticas from './views/Estatisticas.vue';
+import Relatorios from './views/Relatorios.vue';
 
 const routes = [
   {
@@ -34,13 +37,13 @@ const routes = [
       { path: 'emprestimos', name: 'Empréstimos', component: Emprestimos },
       { path: 'pagamentos', name: 'Pagamentos', component: Pagamentos },
       { path: 'calendario', name: 'Calendário', component: () => import('./views/Placeholder.vue') },
-      { path: 'relatorios', name: 'Relatórios', component: () => import('./views/Placeholder.vue') },
-      { path: 'recibos', name: 'Recibos', component: () => import('./views/Placeholder.vue') },
+      { path: 'relatorios', name: 'Relatórios', component: Relatorios },
+      { path: 'recibos', name: 'Recibos', component: Recibos },
       { path: 'notificacoes', name: 'Notificações', component: () => import('./views/Placeholder.vue') },
-      { path: 'estatisticas', name: 'Estatísticas', component: () => import('./views/Placeholder.vue') },
+      { path: 'estatisticas', name: 'Estatísticas', component: Estatisticas },
       { path: 'empresa', name: 'Empresa', component: Empresa },
       { path: 'assinatura', name: 'Assinatura', component: () => import('./views/Placeholder.vue') },
-      { path: 'configuracoes', name: 'Configurações', component: () => import('./views/Placeholder.vue') },
+      { path: 'configuracoes', name: 'Configurações', component: Empresa },
       { path: 'ajuda', name: 'Ajuda', component: () => import('./views/Placeholder.vue') },
     ],
   },

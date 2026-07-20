@@ -1,0 +1,248 @@
+<template>
+  <div class="recibos-page">
+    <div class="header-actions mb-6 no-print">
+      <h1 class="text-xl font-bold">Emissão de Recibos</h1>
+      <p class="text-muted text-sm">Gere e imprima recibos de pagamentos recebidos.</p>
+    </div>
+
+    <div class="surface p-0 overflow-hidden no-print">
+      <div v-if="loading" class="p-6 text-center text-muted">
+        A carregar histórico de pagamentos...
+      </div>
+      
+      <table class="data-table" v-else-if="payments.length > 0">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Método</th>
+            <th>Valor Pago</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="pay in payments" :key="pay._id">
+            <td>{{ formatDate(pay.paymentDate) }}</td>
+            <td class="font-medium">{{ pay.loan?.client?.name || 'Cliente Removido' }}</td>
+            <td class="capitalize">{{ pay.paymentMethod }}</td>
+            <td class="font-bold text-green">MZN {{ pay.amountPaid.toFixed(2) }}</td>
+            <td>
+              <button class="btn-text" @click="imprimirRecibo(pay)">Imprimir Recibo</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div v-else class="p-6 text-center text-muted">
+        Nenhum pagamento registado.
+      </div>
+    </div>
+
+    <!-- Print Template (Hidden by default, shown when printing) -->
+    <div class="print-container" v-if="selectedPayment">
+      <div class="receipt-card">
+        <div class="receipt-header">
+          <img v-if="company.logoUrl" :src="company.logoUrl" alt="Logo" class="print-logo" />
+          <h2>{{ company.name }}</h2>
+          <p>NIF: {{ company.nif || 'N/A' }} | Tel: {{ company.phone || 'N/A' }}</p>
+        </div>
+        
+        <div class="receipt-title">
+          <h3>RECIBO DE PAGAMENTO</h3>
+          <p class="receipt-date">{{ formatDate(selectedPayment.paymentDate) }}</p>
+        </div>
+        
+        <div class="receipt-body">
+          <div class="receipt-row">
+            <span class="label">Recebemos de:</span>
+            <span class="value">{{ selectedPayment.loan?.client?.name || 'N/A' }}</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">A quantia de:</span>
+            <span class="value font-bold text-lg">MZN {{ selectedPayment.amountPaid.toFixed(2) }}</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Referente a:</span>
+            <span class="value">Pagamento de Empréstimo</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Método:</span>
+            <span class="value capitalize">{{ selectedPayment.paymentMethod }}</span>
+          </div>
+        </div>
+        
+        <div class="receipt-footer">
+          <div class="signature-line">
+            <p>Assinatura</p>
+          </div>
+          <p class="thank-you">Obrigado pela preferência!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import api from '../api';
+
+const payments = ref([]);
+const loading = ref(true);
+const company = ref({});
+const selectedPayment = ref(null);
+
+const loadData = async () => {
+  try {
+    const [payRes, compRes] = await Promise.all([
+      api.get('/payments'),
+      api.get('/company/settings')
+    ]);
+    payments.value = payRes.data;
+    company.value = compRes.data;
+  } catch (error) {
+    console.error('Error loading data', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('pt-PT');
+};
+
+const imprimirRecibo = (pay) => {
+  selectedPayment.value = pay;
+  
+  // Need to wait for Vue to render the print container before calling window.print()
+  setTimeout(() => {
+    window.print();
+    // Clear selection after printing so it hides again
+    setTimeout(() => {
+      selectedPayment.value = null;
+    }, 1000);
+  }, 100);
+};
+
+onMounted(() => {
+  loadData();
+});
+</script>
+
+<style scoped>
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+  background-color: var(--bg-body);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.capitalize { text-transform: capitalize; }
+.text-green { color: #16A34A; }
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-text:hover { text-decoration: underline; }
+
+/* Print styling */
+.print-container {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-container, .print-container * {
+    visibility: visible !important;
+  }
+  
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .receipt-card {
+    width: 100%;
+    max-width: 600px;
+    border: 2px solid #000;
+    padding: 40px;
+    background: #fff;
+    margin-top: 20px;
+  }
+  
+  .receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .print-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+  
+  .receipt-header h2 { margin: 0; font-size: 24px; }
+  .receipt-header p { margin: 5px 0 0; color: #555; font-size: 14px; }
+  
+  .receipt-title {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .receipt-title h3 { margin: 0; font-size: 20px; text-decoration: underline; }
+  .receipt-title p { margin: 5px 0 0; color: #555; }
+  
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .receipt-row .label { font-weight: bold; color: #555; }
+  
+  .receipt-footer {
+    margin-top: 50px;
+    text-align: center;
+  }
+  
+  .signature-line {
+    width: 200px;
+    border-top: 1px solid #000;
+    margin: 0 auto;
+    padding-top: 5px;
+  }
+  
+  .thank-you {
+    margin-top: 30px;
+    font-style: italic;
+    color: #555;
+  }
+}
+</style>
