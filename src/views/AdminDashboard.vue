@@ -2,7 +2,7 @@
   <div class="admin-dashboard">
     <div class="header-actions flex justify-between items-center mb-6">
       <h2 class="text-xl font-bold">Gestão de Empresas (Inquilinos)</h2>
-      <button class="btn-primary">Adicionar Nova Empresa</button>
+      <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
     </div>
 
     <div class="surface p-0 overflow-hidden">
@@ -31,9 +31,9 @@
               </span>
             </td>
             <td>
-              <button class="btn-text">Ver Dados</button>
-              <button class="btn-text" :class="empresa.isActive ? 'text-red' : 'text-green'">
-                {{ empresa.isActive ? 'Suspender' : 'Ativar' }}
+              <button class="btn-text" @click="toggleStatus(empresa)" :disabled="togglingId === empresa._id" :class="empresa.isActive ? 'text-red' : 'text-green'">
+                <span v-if="togglingId === empresa._id">...</span>
+                <span v-else>{{ empresa.isActive ? 'Suspender' : 'Ativar' }}</span>
               </button>
             </td>
           </tr>
@@ -44,6 +44,57 @@
         Ainda não tem empresas registadas.
       </div>
     </div>
+
+    <!-- Modal Nova Empresa -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content surface">
+        <div class="modal-header flex justify-between items-center mb-4">
+          <h2 class="font-bold text-lg">Adicionar Nova Empresa</h2>
+          <button class="btn-icon" @click="closeModal">X</button>
+        </div>
+        
+        <form @submit.prevent="salvarEmpresa" class="modal-form">
+          <div class="form-group">
+            <label>Nome da Empresa *</label>
+            <input type="text" v-model="form.name" required />
+          </div>
+          <div class="form-group">
+            <label>NIF *</label>
+            <input type="text" v-model="form.nif" required />
+          </div>
+          <div class="form-group">
+            <label>Plano *</label>
+            <select v-model="form.plan" required class="form-select">
+              <option value="trial">Trial</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          
+          <div class="divider my-4 border-b"></div>
+          <h3 class="font-bold text-sm mb-2">Dados de Acesso (Utilizador)</h3>
+          
+          <div class="form-group">
+            <label>Email do Dono *</label>
+            <input type="email" v-model="form.email" required />
+          </div>
+          <div class="form-group">
+            <label>Password de Acesso *</label>
+            <input type="password" v-model="form.password" required />
+          </div>
+
+          <div v-if="errorMsg" class="error-msg mt-2">{{ errorMsg }}</div>
+
+          <div class="modal-actions mt-6 flex justify-end gap-3">
+            <button type="button" class="btn-secondary" @click="closeModal">Cancelar</button>
+            <button type="submit" class="btn-primary" :disabled="saving">
+              {{ saving ? 'A criar...' : 'Criar Empresa' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -54,6 +105,19 @@ import api from '../api';
 const empresas = ref([]);
 const loading = ref(true);
 
+const showModal = ref(false);
+const saving = ref(false);
+const errorMsg = ref('');
+const togglingId = ref(null);
+
+const form = ref({
+  name: '',
+  nif: '',
+  plan: 'pro',
+  email: '',
+  password: ''
+});
+
 const loadEmpresas = async () => {
   try {
     const { data } = await api.get('/dashboard/superadmin');
@@ -62,6 +126,44 @@ const loadEmpresas = async () => {
     console.error('Error loading companies', error);
   } finally {
     loading.value = false;
+  }
+};
+
+const openModal = () => {
+  errorMsg.value = '';
+  form.value = { name: '', nif: '', plan: 'pro', email: '', password: '' };
+  showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const salvarEmpresa = async () => {
+  saving.value = true;
+  errorMsg.value = '';
+  try {
+    await api.post('/admin/companies', form.value);
+    await loadEmpresas();
+    closeModal();
+  } catch (error) {
+    errorMsg.value = error.response?.data?.message || 'Erro ao criar empresa.';
+  } finally {
+    saving.value = false;
+  }
+};
+
+const toggleStatus = async (empresa) => {
+  if (confirm(`Tem a certeza que deseja ${empresa.isActive ? 'suspender' : 'ativar'} a empresa ${empresa.name}?`)) {
+    togglingId.value = empresa._id;
+    try {
+      await api.put(`/admin/companies/${empresa._id}/toggle-status`);
+      await loadEmpresas();
+    } catch (error) {
+      alert('Erro ao alterar estado.');
+    } finally {
+      togglingId.value = null;
+    }
   }
 };
 
@@ -123,4 +225,57 @@ onMounted(() => {
 .btn-text.text-red {
   color: #DC2626;
 }
+.btn-text:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.form-group input, .form-select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  outline: none;
+  background-color: #fff;
+}
+.form-group input:focus, .form-select:focus { border-color: var(--primary-color); }
+
+.error-msg {
+  color: #DC2626;
+  font-size: 0.875rem;
+}
+
+.border-b { border-bottom: 1px solid var(--border-color); }
 </style>

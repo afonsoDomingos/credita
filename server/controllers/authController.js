@@ -15,6 +15,11 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email }).populate('company');
 
     if (user && (await user.matchPassword(password))) {
+      // Check if it's a company and if the company is suspended
+      if (user.role === 'empresa' && user.company && !user.company.isActive) {
+        return res.status(403).json({ message: 'A sua conta encontra-se suspensa. Contacte o administrador.' });
+      }
+
       res.json({
         _id: user._id,
         email: user.email,
