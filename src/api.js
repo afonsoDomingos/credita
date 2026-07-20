@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Em ambiente dev local, o servidor Express corre na porta 5000.
-// Em produção na Vercel/Render, usaremos o url absoluto da API ou mesma origem.
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Na Vercel, o frontend e backend partilham o mesmo domínio, logo usamos apenas '/api'
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 const api = axios.create({
   baseURL: API_URL,
