@@ -12,6 +12,7 @@ import Recibos from './views/Recibos.vue';
 import Estatisticas from './views/Estatisticas.vue';
 import Relatorios from './views/Relatorios.vue';
 import Perfil from './views/Perfil.vue';
+import Assinatura from './views/Assinatura.vue';
 
 const routes = [
   {
@@ -44,7 +45,7 @@ const routes = [
       { path: 'estatisticas', name: 'Estatísticas', component: Estatisticas },
       { path: 'empresa', name: 'Empresa', component: Empresa },
       { path: 'perfil', name: 'Perfil', component: Perfil },
-      { path: 'assinatura', name: 'Assinatura', component: () => import('./views/Placeholder.vue') },
+      { path: 'assinatura', name: 'Assinatura', component: Assinatura },
       { path: 'configuracoes', name: 'Configurações', component: Empresa },
       { path: 'ajuda', name: 'Ajuda', component: () => import('./views/Placeholder.vue') },
     ],

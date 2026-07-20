@@ -17,8 +17,16 @@ const CompanySchema = new mongoose.Schema({
   },
   subscriptionPlan: {
     type: String,
-    enum: ['trial', 'pro', 'premium'],
+    enum: ['trial', 'pro', 'premium', 'mensal'],
     default: 'trial'
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'pending_verification', 'expired'],
+    default: 'active'
+  },
+  nextBillingDate: {
+    type: Date
   },
   isActive: {
     type: Boolean,

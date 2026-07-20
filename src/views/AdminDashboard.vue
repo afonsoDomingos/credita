@@ -1,8 +1,20 @@
 <template>
   <div class="admin-dashboard">
     <div class="header-actions">
-      <h2 class="page-title">Gestão de Empresas (Inquilinos)</h2>
-      <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
+      <h2 class="page-title">Torre de Controlo (Superadmin)</h2>
+      <div class="flex gap-3">
+        <button class="btn-secondary" @click="openSystemSettingsModal">Definições de Sistema</button>
+        <button class="btn-primary" @click="openModal">Adicionar Nova Empresa</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs flex gap-6 mb-6 border-b">
+      <button class="tab-btn" :class="{ active: activeTab === 'empresas' }" @click="activeTab = 'empresas'">Empresas Registadas</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'comprovativos' }" @click="activeTab = 'comprovativos'">
+        Comprovativos
+        <span v-if="receipts.length > 0" class="badge-count">{{ receipts.length }}</span>
+      </button>
     </div>
 
     <!-- System Health Banner -->
@@ -19,7 +31,7 @@
       <span class="banner-badge">Atualizado agora</span>
     </div>
 
-    <div v-if="stats" class="stats-grid mb-8">
+    <div v-if="stats && activeTab === 'empresas'" class="stats-grid mb-8">
       <div class="stat-card surface shadow-sm">
         <div class="stat-content">
           <h3 class="stat-title">Total Empresas</h3>
@@ -52,11 +64,12 @@
     </div>
 
     <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="loader-wrapper">
-        <Spinner message="A carregar empresas do sistema..." />
-      </div>
-      
-      <table class="companies-table" v-else-if="empresas.length > 0">
+      <div v-if="activeTab === 'empresas'">
+        <div v-if="loading" class="loader-wrapper">
+          <Spinner message="A carregar empresas do sistema..." />
+        </div>
+        
+        <table class="companies-table" v-else-if="empresas.length > 0">
         <thead>
           <tr>
             <th>Nome da Empresa</th>
@@ -107,8 +120,45 @@
         </tbody>
       </table>
       
-      <div v-else class="p-6 text-center text-muted">
-        Ainda não tem empresas registadas.
+        
+        <div v-else class="p-6 text-center text-muted">
+          Ainda não tem empresas registadas.
+        </div>
+      </div>
+
+      <div v-if="activeTab === 'comprovativos'">
+        <table class="companies-table" v-if="receipts.length > 0">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Data</th>
+              <th>Valor / Plano</th>
+              <th>Comprovativo</th>
+              <th class="text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="receipt in receipts" :key="receipt._id" class="table-row">
+              <td class="font-bold">{{ receipt.company?.name || 'N/A' }}</td>
+              <td>{{ new Date(receipt.createdAt).toLocaleDateString() }}</td>
+              <td>{{ receipt.amount }} MT</td>
+              <td>
+                <a :href="receipt.receiptUrl" target="_blank" class="text-blue flex items-center gap-1 hover:underline">
+                  Ver Ficheiro
+                </a>
+              </td>
+              <td class="text-right">
+                <div class="action-buttons">
+                  <button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" @click="reviewReceipt(receipt._id, 'approved')">Aprovar</button>
+                  <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; color: #DC2626; border-color: #DC2626;" @click="reviewReceipt(receipt._id, 'rejected')">Rejeitar</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-else class="p-6 text-center text-muted">
+          Não há comprovativos pendentes.
+        </div>
       </div>
     </div>
 
@@ -192,6 +242,29 @@
           </div>
         </form>
       </div>
+    <!-- Modal System Settings -->
+    <div v-if="showSystemSettingsModal" class="modal-overlay" @click.self="closeSystemSettingsModal">
+      <div class="modal-content surface">
+        <div class="modal-header flex justify-between items-center mb-4">
+          <h2 class="font-bold text-lg">Definições do Sistema</h2>
+          <button class="btn-icon" @click="closeSystemSettingsModal">X</button>
+        </div>
+        
+        <form @submit.prevent="salvarSystemSettings" class="modal-form">
+          <div class="form-group">
+            <label>Link de Checkout (Stripe, Pagaqui, etc.)</label>
+            <input type="url" v-model="systemForm.checkout_link" placeholder="https://..." />
+            <small class="text-muted mt-1">Este link aparecerá nas empresas para pagamento automático online.</small>
+          </div>
+
+          <div class="modal-actions mt-6 flex justify-end gap-3">
+            <button type="button" class="btn-secondary" @click="closeSystemSettingsModal">Cancelar</button>
+            <button type="submit" class="btn-primary" :disabled="saving">
+              {{ saving ? 'A guardar...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
   </div>
@@ -201,14 +274,19 @@
 import { ref, onMounted } from 'vue';
 import { Building2, Activity, Users, Edit, Power, Trash2 } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
+import { useToast } from '../composables/useToast';
 import api from '../api';
 
+const toast = useToast();
 const empresas = ref([]);
+const receipts = ref([]);
 const stats = ref(null);
 const loading = ref(true);
+const activeTab = ref('empresas');
 
 const showModal = ref(false);
 const showPlanModal = ref(false);
+const showSystemSettingsModal = ref(false);
 const saving = ref(false);
 const errorMsg = ref('');
 const togglingId = ref(null);
@@ -225,13 +303,20 @@ const form = ref({
   password: ''
 });
 
+const systemForm = ref({ checkout_link: '' });
+
 const loadEmpresas = async () => {
+  loading.value = true;
   try {
     const { data } = await api.get('/dashboard/superadmin');
     empresas.value = data.empresas;
     stats.value = data.stats;
+    
+    // Load receipts
+    const receiptsRes = await api.get('/admin/receipts/pending');
+    receipts.value = receiptsRes.data;
   } catch (error) {
-    console.error('Error loading companies', error);
+    console.error('Error loading data', error);
   } finally {
     loading.value = false;
   }
@@ -304,9 +389,50 @@ const apagarEmpresa = async (empresa) => {
     try {
       await api.delete(`/admin/companies/${empresa._id}`);
       await loadEmpresas();
+      toast.success('Empresa apagada!');
     } catch (error) {
-      alert('Erro ao apagar empresa.');
+      toast.error('Erro ao apagar empresa.');
     }
+  }
+};
+
+const openSystemSettingsModal = async () => {
+  try {
+    const { data } = await api.get('/system/settings');
+    systemForm.value.checkout_link = data.checkout_link || '';
+    showSystemSettingsModal.value = true;
+  } catch (error) {
+    toast.error('Erro ao carregar definições de sistema.');
+  }
+};
+
+const closeSystemSettingsModal = () => {
+  showSystemSettingsModal.value = false;
+};
+
+const salvarSystemSettings = async () => {
+  saving.value = true;
+  try {
+    await api.put('/admin/system/settings', {
+      key: 'checkout_link',
+      value: systemForm.value.checkout_link
+    });
+    toast.success('Definições guardadas com sucesso.');
+    closeSystemSettingsModal();
+  } catch (error) {
+    toast.error('Erro ao guardar definições.');
+  } finally {
+    saving.value = false;
+  }
+};
+
+const reviewReceipt = async (id, status) => {
+  try {
+    await api.put(`/admin/receipts/${id}/review`, { status });
+    toast.success(`Comprovativo ${status === 'approved' ? 'Aprovado' : 'Rejeitado'}!`);
+    await loadEmpresas();
+  } catch (error) {
+    toast.error('Erro ao processar comprovativo.');
   }
 };
 
@@ -316,6 +442,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+.badge-count {
+  background-color: #EF4444;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
 .header-actions {
   display: flex;
   justify-content: space-between;
