@@ -1,10 +1,11 @@
 <template>
   <div class="assinatura-page">
-    <div class="header-actions mb-6">
-      <div>
-        <h1 class="text-xl font-bold">Assinatura e Faturação</h1>
-        <p class="text-muted text-sm">Gira o seu plano, pagamentos e estado da conta.</p>
+    <div class="header-banner mb-8">
+      <div class="banner-content relative z-10">
+        <h1 class="page-title text-2xl font-bold text-white mb-2">Assinatura & Faturação</h1>
+        <p class="page-subtitle text-blue-100">Gira o seu plano, pagamentos e estado da conta de forma simples e segura.</p>
       </div>
+      <div class="banner-bg-shape"></div>
     </div>
 
     <div v-if="loading" class="loader-wrapper">
@@ -13,104 +14,143 @@
 
     <div v-else class="grid-layout">
       <!-- Status Card -->
-      <div class="surface p-6 shadow-sm flex flex-col items-center text-center">
-        <div 
-          class="status-icon-wrapper" 
-          :class="{
-            'bg-green-100 text-green-600': status === 'active' || status === 'trial',
-            'bg-yellow-100 text-yellow-600': status === 'pending_verification',
-            'bg-red-100 text-red-600': status === 'expired'
-          }"
-        >
-          <CheckCircle v-if="status === 'active'" :size="40" />
-          <Clock v-else-if="status === 'pending_verification'" :size="40" />
-          <AlertCircle v-else-if="status === 'expired'" :size="40" />
-          <Star v-else :size="40" />
-        </div>
-        
-        <h2 class="text-2xl font-bold mt-4 mb-1">
-          Plano {{ plan === 'trial' ? 'TRIAL (30 Dias)' : 'MENSAL (150 MT)' }}
-        </h2>
-        
-        <div class="status-badge mt-2 mb-4" :class="statusClass">
-          {{ statusLabel }}
-        </div>
-        
-        <p class="text-muted mb-6" v-if="status === 'pending_verification'">
-          O seu comprovativo de pagamento está em análise. A sua conta será ativada em breve.
-        </p>
-        <p class="text-muted mb-6" v-else-if="status === 'expired'">
-          A sua assinatura expirou. Regularize o pagamento para continuar a usar a plataforma.
-        </p>
-        <p class="text-muted mb-6" v-else-if="plan === 'trial'">
-          Aproveite o período de teste gratuito para explorar todas as funcionalidades.
-        </p>
-        <p class="text-muted mb-6" v-else>
-          O seu plano está ativo. O próximo pagamento será no dia <strong>{{ nextBillingDateFormatted }}</strong>.
-        </p>
-
-        <div class="divider w-full mb-6 border-b"></div>
-
-        <div class="payment-actions flex flex-col gap-3 w-full">
-          <a v-if="checkoutLink" :href="checkoutLink" target="_blank" class="btn-primary w-full flex items-center justify-center gap-2">
-            <CreditCard :size="18" /> Pagar Online Agora
-          </a>
+      <div class="premium-card status-card relative overflow-hidden">
+        <div class="card-glow" :class="glowClass"></div>
+        <div class="flex flex-col items-center text-center relative z-10">
+          <div 
+            class="status-icon-wrapper shadow-lg" 
+            :class="{
+              'icon-active': status === 'active' || status === 'trial',
+              'icon-warning': status === 'pending_verification',
+              'icon-error': status === 'expired'
+            }"
+          >
+            <CheckCircle v-if="status === 'active'" :size="42" stroke-width="2" />
+            <Clock v-else-if="status === 'pending_verification'" :size="42" stroke-width="2" />
+            <AlertCircle v-else-if="status === 'expired'" :size="42" stroke-width="2" />
+            <Star v-else :size="42" stroke-width="2" />
+          </div>
           
-          <button @click="showModal = true" class="btn-secondary w-full flex items-center justify-center gap-2">
-            <UploadCloud :size="18" /> Enviar Comprovativo
-          </button>
+          <h2 class="plan-title mt-6 mb-2 text-2xl font-black text-gray-800">
+            Plano <span class="highlight-text">{{ plan === 'trial' ? 'TRIAL (30 Dias)' : 'MENSAL' }}</span>
+          </h2>
+          
+          <div class="premium-badge mb-6 shadow-sm" :class="statusClass">
+            <span class="badge-dot"></span>
+            {{ statusLabel }}
+          </div>
+          
+          <div class="status-desc-box mb-8 p-4 rounded-2xl w-full text-sm leading-relaxed" :class="descBoxClass">
+            <p v-if="status === 'pending_verification'">
+              O seu comprovativo está em análise pela nossa equipa. A sua conta será ativada brevemente.
+            </p>
+            <p v-else-if="status === 'expired'">
+              A sua assinatura expirou. Regularize o seu pagamento para reativar o acesso à plataforma.
+            </p>
+            <p v-else-if="plan === 'trial'">
+              Aproveite o período de teste gratuito para explorar todo o potencial do nosso sistema!
+            </p>
+            <p v-else>
+              Tudo operacional! O seu próximo pagamento está previsto para <strong>{{ nextBillingDateFormatted }}</strong>.
+            </p>
+          </div>
+
+          <div class="payment-actions w-full flex flex-col gap-3">
+            <a v-if="checkoutLink" :href="checkoutLink" target="_blank" class="btn-premium btn-online w-full shadow-md">
+              <CreditCard :size="20" /> Pagar Online Agora
+            </a>
+            
+            <button @click="showModal = true" class="btn-premium btn-upload w-full shadow-md">
+              <UploadCloud :size="20" /> Enviar Comprovativo
+            </button>
+          </div>
         </div>
       </div>
       
       <!-- Info Box -->
-      <div class="surface p-6 shadow-sm">
-        <h3 class="font-bold text-lg mb-4">Informação de Pagamento</h3>
-        <p class="text-muted text-sm mb-4">Para transferências manuais, por favor utilize os seguintes dados bancários e envie o comprovativo.</p>
+      <div class="premium-card info-card">
+        <div class="card-header mb-6">
+          <h3 class="font-bold text-xl text-gray-800">Pagamento por Transferência</h3>
+          <p class="text-muted text-sm mt-1">Utilize uma das contas abaixo e envie o comprovativo no botão ao lado.</p>
+        </div>
         
-        <div class="bank-details bg-light p-4 rounded-md mb-6">
-          <div class="detail-row flex justify-between mb-2">
-            <span class="text-muted text-sm">M-Pesa / E-Mola:</span>
-            <span class="font-semibold">+258 84 123 4567</span>
+        <div class="bank-accounts flex flex-col gap-4">
+          <div class="account-tile hover-lift">
+            <div class="account-icon mpesa-icon shadow-sm">
+              <Smartphone :size="20" />
+            </div>
+            <div class="account-details flex-1">
+              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa / E-Mola</span>
+              <span class="account-number text-lg font-black text-gray-800">+258 84 123 4567</span>
+            </div>
+            <button class="copy-btn" title="Copiar" @click="copyText('+258841234567')"><Copy :size="18"/></button>
           </div>
-          <div class="detail-row flex justify-between mb-2">
-            <span class="text-muted text-sm">Banco (BIM):</span>
-            <span class="font-semibold">00123456789</span>
+
+          <div class="account-tile hover-lift">
+            <div class="account-icon bank-icon shadow-sm">
+              <Building :size="20" />
+            </div>
+            <div class="account-details flex-1">
+              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">Conta Bancária (BIM)</span>
+              <span class="account-number text-lg font-black text-gray-800">00123456789</span>
+            </div>
+            <button class="copy-btn" title="Copiar" @click="copyText('00123456789')"><Copy :size="18"/></button>
           </div>
-          <div class="detail-row flex justify-between">
-            <span class="text-muted text-sm">Titular:</span>
-            <span class="font-semibold">Etako Technologies</span>
+          
+          <div class="titular-box mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+            <span class="text-gray-500 text-sm font-medium">Titular da Conta:</span>
+            <span class="font-bold text-gray-800 text-sm bg-white py-1 px-3 rounded-lg shadow-sm">Etako Technologies</span>
           </div>
         </div>
         
-        <h4 class="font-semibold mb-2">Precisa de Ajuda?</h4>
-        <p class="text-muted text-sm">Contacte o suporte pelo WhatsApp: +258 84 000 0000</p>
+        <div class="support-banner mt-auto flex items-center justify-between p-4 rounded-xl bg-blue-50 border border-blue-100">
+          <div class="flex items-center gap-3">
+            <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+              <MessageCircle :size="20" />
+            </div>
+            <div>
+              <h4 class="font-bold text-blue-900 text-sm mb-0.5">Dúvidas?</h4>
+              <p class="text-blue-700 text-xs font-medium">Fale connosco no WhatsApp</p>
+            </div>
+          </div>
+          <a href="https://wa.me/258840000000" target="_blank" class="whatsapp-btn font-bold text-xs">
+            Contactar
+          </a>
+        </div>
       </div>
     </div>
 
     <!-- Modal Upload Comprovativo -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content surface">
-        <div class="modal-header flex justify-between items-center mb-4">
-          <h2 class="font-bold text-lg">Enviar Comprovativo</h2>
-          <button class="btn-icon" @click="closeModal">
+      <div class="modal-content premium-modal shadow-2xl">
+        <div class="modal-header flex justify-between items-center mb-6">
+          <h2 class="font-bold text-xl text-gray-800">Enviar Comprovativo</h2>
+          <button class="btn-icon-close bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full p-2 transition-colors" @click="closeModal">
             <X :size="20" />
           </button>
         </div>
         
         <form @submit.prevent="enviarComprovativo" class="modal-form">
-          <div class="form-group">
-            <label>Selecione o ficheiro ou foto (JPG, PNG, PDF) *</label>
-            <input type="file" required accept="image/*,.pdf" @change="onFileChange" class="mt-2" />
+          <div class="upload-area-wrapper mb-6 relative">
+            <input type="file" required accept="image/*,.pdf" @change="onFileChange" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+            <div class="upload-dropzone border-2 border-dashed border-blue-300 bg-blue-50 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-blue-100">
+              <UploadCloud :size="40" class="text-blue-500 mb-3" />
+              <h4 class="font-bold text-blue-900 mb-1">Clique ou arraste o ficheiro</h4>
+              <p class="text-blue-600 text-xs font-medium">JPG, PNG ou PDF (Máx. 5MB)</p>
+              <div v-if="receiptFile" class="mt-4 px-4 py-2 bg-white rounded-lg shadow-sm text-sm font-bold text-gray-800 w-full truncate">
+                ✅ {{ receiptFile.name }}
+              </div>
+            </div>
           </div>
           
-          <div class="form-group mt-4">
-            <label>Notas adicionais (Opcional)</label>
-            <textarea v-model="notes" rows="3" placeholder="Referência da transferência, nome do titular..."></textarea>
+          <div class="form-group mb-6">
+            <label class="font-bold text-gray-700 text-sm mb-2 block">Notas adicionais (Opcional)</label>
+            <textarea v-model="notes" rows="3" placeholder="Ex: Pagamento referente ao mês de Julho..." class="premium-textarea w-full"></textarea>
           </div>
 
-          <div class="modal-actions mt-6 flex justify-end gap-3">
-            <button type="button" class="btn-secondary" @click="closeModal">Cancelar</button>
-            <button type="submit" class="btn-primary" :disabled="saving">
+          <div class="modal-actions flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button type="button" class="btn-secondary-outline px-6 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors" @click="closeModal">Cancelar</button>
+            <button type="submit" class="btn-primary px-6 py-2.5 rounded-xl font-bold shadow-md hover:shadow-lg transition-all" :disabled="saving">
               {{ saving ? 'A Enviar...' : 'Confirmar Envio' }}
             </button>
           </div>
@@ -123,7 +163,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { CheckCircle, Clock, AlertCircle, Star, CreditCard, UploadCloud, X } from '@lucide/vue';
+import { CheckCircle, Clock, AlertCircle, Star, CreditCard, UploadCloud, X, Smartphone, Building, Copy, MessageCircle } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
 import api from '../api';
@@ -141,6 +181,15 @@ const checkoutLink = ref(null);
 const receiptFile = ref(null);
 const notes = ref('');
 
+const copyText = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success('Copiado para a área de transferência!');
+  } catch (err) {
+    toast.error('Erro ao copiar.');
+  }
+};
+
 const loadData = async () => {
   try {
     const [companyRes, sysRes] = await Promise.all([
@@ -151,7 +200,6 @@ const loadData = async () => {
     plan.value = companyRes.data.subscriptionPlan || 'trial';
     status.value = companyRes.data.subscriptionStatus || 'active';
     
-    // Calculate date
     if (companyRes.data.nextBillingDate) {
       nextDate.value = new Date(companyRes.data.nextBillingDate);
     } else if (plan.value === 'trial') {
@@ -159,7 +207,6 @@ const loadData = async () => {
       created.setDate(created.getDate() + 30);
       nextDate.value = created;
       
-      // Auto-expire if past 30 days and still active
       if (status.value === 'active' && nextDate.value < new Date()) {
         status.value = 'expired';
       }
@@ -182,9 +229,23 @@ const statusLabel = computed(() => {
 });
 
 const statusClass = computed(() => {
-  if (status.value === 'active' || (status.value === 'trial' && plan.value === 'trial')) return 'badge-active';
-  if (status.value === 'pending_verification') return 'badge-warning';
-  if (status.value === 'expired') return 'badge-error';
+  if (status.value === 'active' || (status.value === 'trial' && plan.value === 'trial')) return 'badge-active text-green-700 bg-green-100 border border-green-200';
+  if (status.value === 'pending_verification') return 'badge-warning text-yellow-700 bg-yellow-100 border border-yellow-200';
+  if (status.value === 'expired') return 'badge-error text-red-700 bg-red-100 border border-red-200';
+  return '';
+});
+
+const descBoxClass = computed(() => {
+  if (status.value === 'active' || (status.value === 'trial' && plan.value === 'trial')) return 'bg-green-50 text-green-800';
+  if (status.value === 'pending_verification') return 'bg-yellow-50 text-yellow-800';
+  if (status.value === 'expired') return 'bg-red-50 text-red-800';
+  return 'bg-gray-50';
+});
+
+const glowClass = computed(() => {
+  if (status.value === 'active' || (status.value === 'trial' && plan.value === 'trial')) return 'glow-green';
+  if (status.value === 'pending_verification') return 'glow-yellow';
+  if (status.value === 'expired') return 'glow-red';
   return '';
 });
 
@@ -236,83 +297,236 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.assinatura-page {
+  padding-bottom: 40px;
+}
+
+.header-banner {
+  position: relative;
+  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  border-radius: 24px;
+  padding: 32px 40px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+.banner-bg-shape {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  filter: blur(20px);
+}
+
 .grid-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  max-width: 900px;
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
+/* Premium Card Base */
+.premium-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  filter: blur(60px);
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.glow-green { background: #4ADE80; }
+.glow-yellow { background: #FACC15; }
+.glow-red { background: #F87171; }
+
 .status-icon-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: white;
+  margin-bottom: 8px;
 }
 
-.bg-green-100 { background-color: #DCFCE7; }
-.text-green-600 { color: #16A34A; }
-.bg-yellow-100 { background-color: #FEF9C3; }
-.text-yellow-600 { color: #CA8A04; }
-.bg-red-100 { background-color: #FEE2E2; }
-.text-red-600 { color: #DC2626; }
+.icon-active { color: #16A34A; }
+.icon-warning { color: #CA8A04; }
+.icon-error { color: #DC2626; }
 
-.status-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 700;
+.highlight-text {
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.premium-badge {
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
 }
 
-.badge-active { background-color: #DCFCE7; color: #16A34A; }
-.badge-warning { background-color: #FEF9C3; color: #CA8A04; }
-.badge-error { background-color: #FEE2E2; color: #DC2626; }
-
-.bg-light {
-  background-color: var(--bg-body);
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
 }
 
-.rounded-md {
-  border-radius: var(--radius-md);
-}
-
-.border-b {
-  border-bottom: 1px solid var(--border-color);
-}
-
-textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  outline: none;
-  width: 100%;
-  resize: vertical;
-}
-
-textarea:focus { border-color: var(--primary-color); }
-
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+/* Buttons */
+.btn-premium {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
 }
 
-.modal-content {
-  width: 100%;
-  max-width: 450px;
-  padding: 24px;
+.btn-premium:hover {
+  transform: translateY(-2px);
 }
 
-@media (max-width: 768px) {
+.btn-online {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: white;
+}
+
+.btn-online:hover {
+  box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+}
+
+.btn-upload {
+  background: white;
+  border: 2px solid #E2E8F0;
+  color: #475569;
+}
+
+.btn-upload:hover {
+  border-color: #3B82F6;
+  color: #3B82F6;
+  box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.1);
+}
+
+/* Info Card */
+.info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-tile {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,0.05);
+  background: white;
+  border-color: #E2E8F0;
+}
+
+.account-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.mpesa-icon { background: #EF4444; color: white; }
+.bank-icon { background: #3B82F6; color: white; }
+
+.copy-btn {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.whatsapp-btn {
+  background: #2563EB;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.whatsapp-btn:hover {
+  background: #1D4ED8;
+  transform: translateY(-1px);
+}
+
+/* Modal */
+.premium-modal {
+  background: white;
+  border-radius: 32px;
+}
+
+.premium-textarea {
+  padding: 16px;
+  border: 2px solid #E2E8F0;
+  border-radius: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.premium-textarea:focus {
+  border-color: #3B82F6;
+}
+
+@media (max-width: 1024px) {
   .grid-layout { grid-template-columns: 1fr; }
+  .header-banner { padding: 24px; border-radius: 20px; }
+  .premium-card { padding: 24px; border-radius: 24px; }
 }
 </style>
