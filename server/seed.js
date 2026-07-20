@@ -40,6 +40,37 @@ const seedDB = async () => {
     await userEmpresa.save();
     console.log('🧑‍💼 User da Empresa criado: empresa@credita.com');
 
+    // 4. Adicionar 3 Clientes Reais à Empresa
+    const Client = require('./models/Client');
+    await Client.deleteMany();
+    
+    const clientesReais = [
+      {
+        company: savedCompany._id,
+        name: 'Maria João Santos',
+        phone: '+244 923 456 789',
+        idCard: '001234567LA032',
+        address: 'Talatona, Luanda'
+      },
+      {
+        company: savedCompany._id,
+        name: 'Carlos Alberto Costa',
+        phone: '+244 945 678 123',
+        idCard: '007654321LA045',
+        address: 'Maianga, Luanda'
+      },
+      {
+        company: savedCompany._id,
+        name: 'Ana Paula Fernandes',
+        phone: '+244 912 345 678',
+        idCard: '009876543LA011',
+        address: 'Viana, Luanda'
+      }
+    ];
+
+    await Client.insertMany(clientesReais);
+    console.log('👥 3 Clientes reais inseridos no banco de dados para a Empresa Teste!');
+
     console.log('🎉 Seeding Completo!');
     process.exit();
   } catch (err) {
