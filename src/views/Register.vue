@@ -3,17 +3,38 @@
     <div class="login-card surface">
       <div class="login-header">
         <h1 class="logo-title">Microcrédito</h1>
-        <p class="text-muted text-sm mt-2">Inicie sessão na sua conta de Microcrédito para gerir os seus microcréditos.</p>
+        <p class="text-muted text-sm mt-2">Crie a sua conta e comece a gerir os seus microcréditos.</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="login-form">
+      <form @submit.prevent="handleRegister" class="login-form">
+        <div class="form-group">
+          <label for="companyName">Nome da Empresa</label>
+          <input 
+            type="text" 
+            id="companyName" 
+            v-model="companyName" 
+            placeholder="Ex: A Minha Empresa Lda" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="nif">NIF (Opcional)</label>
+          <input 
+            type="text" 
+            id="nif" 
+            v-model="nif" 
+            placeholder="NIF da Empresa" 
+          />
+        </div>
+
         <div class="form-group">
           <label for="email">Email</label>
           <input 
             type="email" 
             id="email" 
             v-model="email" 
-            placeholder="admin@credita.com" 
+            placeholder="seu@email.com" 
             required 
           />
         </div>
@@ -34,15 +55,15 @@
         </div>
 
         <button type="submit" class="btn-primary login-btn" :disabled="loading">
-          <span v-if="loading">A entrar...</span>
-          <span v-else>Entrar</span>
+          <span v-if="loading">A criar conta...</span>
+          <span v-else>Criar Conta</span>
         </button>
       </form>
       
       <div class="mt-6 text-center text-sm">
         <p class="text-muted">
-          Ainda não tem conta? 
-          <router-link to="/register" class="text-primary font-medium hover-underline">Crie uma aqui</router-link>
+          Já tem conta? 
+          <router-link to="/login" class="text-primary font-medium hover-underline">Inicie sessão</router-link>
         </p>
       </div>
     </div>
@@ -55,17 +76,21 @@ import { useRouter } from 'vue-router';
 import api from '../api';
 
 const router = useRouter();
+const companyName = ref('');
+const nif = ref('');
 const email = ref('');
 const password = ref('');
 const errorMsg = ref('');
 const loading = ref(false);
 
-const handleLogin = async () => {
+const handleRegister = async () => {
   loading.value = true;
   errorMsg.value = '';
   
   try {
-    const { data } = await api.post('/auth/login', {
+    const { data } = await api.post('/auth/register', {
+      companyName: companyName.value,
+      nif: nif.value,
       email: email.value,
       password: password.value
     });
@@ -78,14 +103,10 @@ const handleLogin = async () => {
       token: data.token
     }));
     
-    // Redirect based on role
-    if (data.role === 'superadmin') {
-      router.push('/admin');
-    } else {
-      router.push('/app');
-    }
+    // Redirect to app
+    router.push('/app');
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || 'Erro ao tentar iniciar sessão.';
+    errorMsg.value = error.response?.data?.message || 'Erro ao tentar criar conta.';
   } finally {
     loading.value = false;
   }
@@ -103,7 +124,7 @@ const handleLogin = async () => {
 
 .login-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   padding: 40px;
 }
 

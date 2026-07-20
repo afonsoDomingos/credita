@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Company = require('../models/Company');
 
 const generateToken = (id) => {
   // Num cenário real usar um JWT_SECRET forte no .env
@@ -36,4 +37,42 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser };
+const registerUser = async (req, res) => {
+  const { companyName, nif, email, password } = req.body;
+
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'Este email já está registado.' });
+    }
+
+    const company = new Company({
+      name: companyName,
+      nif: nif || '',
+      subscriptionPlan: 'trial',
+      isActive: true
+    });
+    const savedCompany = await company.save();
+
+    const user = new User({
+      email,
+      password,
+      role: 'empresa',
+      company: savedCompany._id
+    });
+    const savedUser = await user.save();
+
+    res.status(201).json({
+      _id: savedUser._id,
+      email: savedUser.email,
+      role: savedUser.role,
+      company: savedCompany,
+      token: generateToken(savedUser._id),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar conta' });
+  }
+};
+
+module.exports = { loginUser, registerUser };

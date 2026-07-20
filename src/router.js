@@ -3,6 +3,7 @@ import AppLayout from './components/AppLayout.vue';
 import AdminLayout from './components/AdminLayout.vue';
 import Dashboard from './views/Dashboard.vue';
 import Login from './views/Login.vue';
+import Register from './views/Register.vue';
 import AdminDashboard from './views/AdminDashboard.vue';
 import Clientes from './views/Clientes.vue';
 import Emprestimos from './views/Emprestimos.vue';
@@ -14,6 +15,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
   },
   {
     path: '/app',
