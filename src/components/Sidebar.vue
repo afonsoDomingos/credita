@@ -39,19 +39,19 @@
       <div class="sidebar-footer">
         <ul>
           <li :title="collapsed ? 'Configurações' : ''">
-            <router-link to="/configuracoes" class="nav-item" active-class="active">
+            <router-link to="/app/configuracoes" class="nav-item" active-class="active">
               <Settings :size="20" class="nav-icon" />
               <span class="nav-text" v-if="!collapsed">Configurações</span>
             </router-link>
           </li>
           <li :title="collapsed ? 'Ajuda' : ''">
-            <router-link to="/ajuda" class="nav-item" active-class="active">
+            <router-link to="/app/ajuda" class="nav-item" active-class="active">
               <HelpCircle :size="20" class="nav-icon" />
               <span class="nav-text" v-if="!collapsed">Ajuda</span>
             </router-link>
           </li>
           <li :title="collapsed ? 'Terminar Sessão' : ''">
-            <a href="#" class="nav-item logout">
+            <a href="#" class="nav-item logout" @click.prevent="logout">
               <LogOut :size="20" class="nav-icon" />
               <span class="nav-text" v-if="!collapsed">Terminar Sessão</span>
             </a>
@@ -63,6 +63,7 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
 import { 
   Building2, 
   ChevronLeft, 
@@ -84,6 +85,13 @@ import {
   LogOut 
 } from '@lucide/vue';
 
+const router = useRouter();
+
+const logout = () => {
+  localStorage.removeItem('user');
+  router.push('/login');
+};
+
 defineProps({
   collapsed: Boolean,
   mobileOpen: Boolean
@@ -92,17 +100,17 @@ defineProps({
 defineEmits(['toggle', 'close-mobile']);
 
 const menuItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Clientes', path: '/clientes', icon: Users },
-  { name: 'Empréstimos', path: '/emprestimos', icon: Banknote },
-  { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard },
-  { name: 'Calendário', path: '/calendario', icon: Calendar },
-  { name: 'Relatórios', path: '/relatorios', icon: FileText },
-  { name: 'Recibos', path: '/recibos', icon: ReceiptText },
-  { name: 'Notificações', path: '/notificacoes', icon: Bell },
-  { name: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
-  { name: 'Empresa', path: '/empresa', icon: Building },
-  { name: 'Assinatura', path: '/assinatura', icon: Briefcase },
+  { name: 'Dashboard', path: '/app', icon: LayoutDashboard },
+  { name: 'Clientes', path: '/app/clientes', icon: Users },
+  { name: 'Empréstimos', path: '/app/emprestimos', icon: Banknote },
+  { name: 'Pagamentos', path: '/app/pagamentos', icon: CreditCard },
+  { name: 'Calendário', path: '/app/calendario', icon: Calendar },
+  { name: 'Relatórios', path: '/app/relatorios', icon: FileText },
+  { name: 'Recibos', path: '/app/recibos', icon: ReceiptText },
+  { name: 'Notificações', path: '/app/notificacoes', icon: Bell },
+  { name: 'Estatísticas', path: '/app/estatisticas', icon: BarChart3 },
+  { name: 'Empresa', path: '/app/empresa', icon: Building },
+  { name: 'Assinatura', path: '/app/assinatura', icon: Briefcase },
 ];
 </script>
 

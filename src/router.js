@@ -1,18 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from './components/AppLayout.vue';
+import AdminLayout from './components/AdminLayout.vue';
 import Dashboard from './views/Dashboard.vue';
+import Login from './views/Login.vue';
+import AdminDashboard from './views/AdminDashboard.vue';
 
 const routes = [
   {
-    path: '/',
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+  {
+    path: '/app',
     component: AppLayout,
+    meta: { requiresAuth: true, role: 'empresa' },
     children: [
-      {
-        path: '',
-        name: 'Dashboard',
-        component: Dashboard,
-      },
-      // Placeholders for other routes
+      { path: '', name: 'Dashboard', component: Dashboard },
       { path: 'clientes', name: 'Clientes', component: () => import('./views/Placeholder.vue') },
       { path: 'emprestimos', name: 'Empréstimos', component: () => import('./views/Placeholder.vue') },
       { path: 'pagamentos', name: 'Pagamentos', component: () => import('./views/Placeholder.vue') },
@@ -27,11 +31,44 @@ const routes = [
       { path: 'ajuda', name: 'Ajuda', component: () => import('./views/Placeholder.vue') },
     ],
   },
+  {
+    path: '/admin',
+    component: AdminLayout,
+    meta: { requiresAuth: true, role: 'superadmin' },
+    children: [
+      { path: '', name: 'AdminDashboard', component: AdminDashboard }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login'
+  }
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Auth Guard
+router.beforeEach((to, from, next) => {
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : null;
+
+  if (to.meta.requiresAuth && !user) {
+    next('/login');
+  } else if (to.meta.requiresAuth && user) {
+    if (to.meta.role && to.meta.role !== user.role) {
+      // Bloquear se tiver role errado (ex: empresa tentar ir para /admin)
+      next(user.role === 'superadmin' ? '/admin' : '/app');
+    } else {
+      next();
+    }
+  } else if (to.path === '/login' && user) {
+    next(user.role === 'superadmin' ? '/admin' : '/app');
+  } else {
+    next();
+  }
 });
 
 export default router;
