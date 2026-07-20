@@ -70,7 +70,8 @@
           <tr v-for="empresa in empresas" :key="empresa._id" class="table-row">
             <td>
               <div class="company-name-cell">
-                <div class="avatar-circle">
+                <img v-if="empresa.logoUrl" :src="empresa.logoUrl" alt="Logo" class="avatar-circle" style="object-fit: cover;" />
+                <div v-else class="avatar-circle">
                   {{ empresa.name.charAt(0).toUpperCase() }}
                 </div>
                 <span class="font-bold text-gray-800">{{ empresa.name }}</span>
