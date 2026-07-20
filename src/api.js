@@ -15,6 +15,10 @@ api.interceptors.request.use((config) => {
   }
   return config;
 }, (error) => {
+  if (error.response && error.response.status === 403 && error.response.data?.code === 'SUBSCRIPTION_EXPIRED') {
+    // Redirecionar para a página de assinatura
+    window.location.href = '/app/assinatura';
+  }
   return Promise.reject(error);
 });
 

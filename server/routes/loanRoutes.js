@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getLoans, createLoan } = require('../controllers/loanController');
+const { getLoans, createLoan, updateLoanStatus } = require('../controllers/loanController');
 const { protect } = require('../middleware/authMiddleware');
+const { checkSubscription } = require('../middleware/subscriptionMiddleware');
 
 router.route('/')
-  .get(protect, getLoans)
-  .post(protect, createLoan);
+  .get(protect, checkSubscription, getLoans)
+  .post(protect, checkSubscription, createLoan);
 
 module.exports = router;

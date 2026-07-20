@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { getClients, createClient, updateClient, deleteClient } = require('../controllers/clientController');
 const { protect } = require('../middleware/authMiddleware');
+const { checkSubscription } = require('../middleware/subscriptionMiddleware');
 
 router.route('/')
-  .get(protect, getClients)
-  .post(protect, createClient);
+  .get(protect, checkSubscription, getClients)
+  .post(protect, checkSubscription, createClient);
 
 router.route('/:id')
-  .put(protect, updateClient)
-  .delete(protect, deleteClient);
+  .put(protect, checkSubscription, updateClient)
+  .delete(protect, checkSubscription, deleteClient);
 
 module.exports = router;
