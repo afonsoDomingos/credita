@@ -17,9 +17,15 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const loanRoutes = require('./routes/loanRoutes');
+const companyRoutes = require('./routes/companyRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/loans', loanRoutes);
+app.use('/api/company', companyRoutes);
 
 // Test route
 app.get('/api/health', (req, res) => {

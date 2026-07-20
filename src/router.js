@@ -4,6 +4,9 @@ import AdminLayout from './components/AdminLayout.vue';
 import Dashboard from './views/Dashboard.vue';
 import Login from './views/Login.vue';
 import AdminDashboard from './views/AdminDashboard.vue';
+import Clientes from './views/Clientes.vue';
+import Emprestimos from './views/Emprestimos.vue';
+import Empresa from './views/Empresa.vue';
 
 const routes = [
   {
@@ -17,15 +20,15 @@ const routes = [
     meta: { requiresAuth: true, role: 'empresa' },
     children: [
       { path: '', name: 'Dashboard', component: Dashboard },
-      { path: 'clientes', name: 'Clientes', component: () => import('./views/Placeholder.vue') },
-      { path: 'emprestimos', name: 'Empréstimos', component: () => import('./views/Placeholder.vue') },
+      { path: 'clientes', name: 'Clientes', component: Clientes },
+      { path: 'emprestimos', name: 'Empréstimos', component: Emprestimos },
       { path: 'pagamentos', name: 'Pagamentos', component: () => import('./views/Placeholder.vue') },
       { path: 'calendario', name: 'Calendário', component: () => import('./views/Placeholder.vue') },
       { path: 'relatorios', name: 'Relatórios', component: () => import('./views/Placeholder.vue') },
       { path: 'recibos', name: 'Recibos', component: () => import('./views/Placeholder.vue') },
       { path: 'notificacoes', name: 'Notificações', component: () => import('./views/Placeholder.vue') },
       { path: 'estatisticas', name: 'Estatísticas', component: () => import('./views/Placeholder.vue') },
-      { path: 'empresa', name: 'Empresa', component: () => import('./views/Placeholder.vue') },
+      { path: 'empresa', name: 'Empresa', component: Empresa },
       { path: 'assinatura', name: 'Assinatura', component: () => import('./views/Placeholder.vue') },
       { path: 'configuracoes', name: 'Configurações', component: () => import('./views/Placeholder.vue') },
       { path: 'ajuda', name: 'Ajuda', component: () => import('./views/Placeholder.vue') },
