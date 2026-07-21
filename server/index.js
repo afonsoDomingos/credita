@@ -18,7 +18,7 @@ if (!process.env.JWT_SECRET) {
 
 // Temporarily disabled cloudinary to debug 500 error
 // const { upload } = require('./config/cloudinary');
-const Client = require('./models/Client');
+// const Client = require('./models/Client'); // Not used in index.js
 
 const app = express();
 
@@ -34,8 +34,8 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Servir ficheiros carregados localmente de forma estática
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Temporarily disabled static file serving (uploads folder may not exist on Vercel)
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Custom Request Logger for Production Debugging
 app.use((req, res, next) => {
@@ -81,7 +81,8 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
-const companyRoutes = require('./routes/companyRoutes');
+// Temporarily disabled company routes that use cloudinary upload
+// const companyRoutes = require('./routes/companyRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const systemRoutes = require('./routes/systemRoutes');
@@ -94,7 +95,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/company', companyRoutes);
+// app.use('/api/company', companyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/support', supportRoutes);
