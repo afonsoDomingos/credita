@@ -1,5 +1,6 @@
 const Payment = require('../models/Payment');
 const Loan = require('../models/Loan');
+const { logActivity } = require('../utils/auditLogger');
 
 // Listar todos os pagamentos da empresa
 const getPayments = async (req, res) => {
@@ -26,7 +27,7 @@ const createPayment = async (req, res) => {
 
   try {
     // Validate loan belongs to company
-    const loan = await Loan.findOne({ _id: loanId, company: req.user.company });
+    const loan = await Loan.findOne({ _id: loanId, company: req.user.company }).populate('client', 'name');
     if (!loan) {
       return res.status(404).json({ message: 'Empréstimo não encontrado' });
     }
@@ -40,8 +41,7 @@ const createPayment = async (req, res) => {
 
     const savedPayment = await payment.save();
     
-    // Future: logic to check if loan is fully paid and update status
-    // For now we just record the payment
+    await logActivity(req, 'REGISTAR_PAGAMENTO', `Registou pagamento de MT ${amountPaid.toLocaleString()} do cliente ${loan.client?.name || 'Cliente'} (${paymentMethod})`);
 
     res.status(201).json(savedPayment);
   } catch (error) {
@@ -75,16 +75,22 @@ const getPaymentById = async (req, res) => {
 // Apagar / Anular um pagamento
 const deletePayment = async (req, res) => {
   try {
-    const payment = await Payment.findOne({ _id: req.params.id, company: req.user.company });
+    const payment = await Payment.findOne({ _id: req.params.id, company: req.user.company }).populate({
+      path: 'loan',
+      populate: { path: 'client', select: 'name' }
+    });
     
     if (!payment) {
       return res.status(404).json({ message: 'Pagamento não encontrado' });
     }
     
-    // Future logic: IF we updated the loan status to 'paid' when this payment was made, 
-    // we should probably revert it to 'active'. For MVP, just delete the payment.
+    const amount = payment.amountPaid;
+    const clientName = payment.loan?.client?.name || 'Cliente';
+
     await payment.deleteOne();
     
+    await logActivity(req, 'ANULAR_PAGAMENTO', `Anulou o pagamento de MT ${amount.toLocaleString()} do cliente ${clientName}`);
+
     res.json({ message: 'Pagamento anulado com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao anular pagamento' });

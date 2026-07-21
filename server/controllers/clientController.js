@@ -1,4 +1,5 @@
 const Client = require('../models/Client');
+const { logActivity } = require('../utils/auditLogger');
 
 // Listar clientes
 const getClients = async (req, res) => {
@@ -29,6 +30,9 @@ const createClient = async (req, res) => {
     });
 
     const savedClient = await client.save();
+    
+    await logActivity(req, 'CRIAR_CLIENTE', `Cadastrou novo cliente: ${name} (${idCard || 'Sem BI'})`);
+
     res.status(201).json(savedClient);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar cliente' });
@@ -50,6 +54,9 @@ const updateClient = async (req, res) => {
     client.address = req.body.address || client.address;
 
     const updatedClient = await client.save();
+    
+    await logActivity(req, 'EDITAR_CLIENTE', `Atualizou dados do cliente: ${updatedClient.name}`);
+
     res.json(updatedClient);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao atualizar cliente' });
@@ -64,6 +71,8 @@ const deleteClient = async (req, res) => {
     if (!client) {
       return res.status(404).json({ message: 'Cliente não encontrado' });
     }
+
+    await logActivity(req, 'APAGAR_CLIENTE', `Apagou o cliente: ${client.name}`);
 
     res.json({ message: 'Cliente apagado com sucesso' });
   } catch (error) {

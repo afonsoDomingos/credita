@@ -74,7 +74,8 @@ import {
   Briefcase, 
   Settings, 
   HelpCircle, 
-  LogOut 
+  LogOut,
+  ClipboardList
 } from '@lucide/vue';
 
 const router = useRouter();
@@ -98,6 +99,7 @@ const menuItems = [
   { name: 'Pagamentos', path: '/app/pagamentos', icon: CreditCard },
   { name: 'Calendário', path: '/app/calendario', icon: Calendar },
   { name: 'Relatórios', path: '/app/relatorios', icon: FileText },
+  { name: 'Auditoria', path: '/app/auditoria', icon: ClipboardList },
   { name: 'Recibos', path: '/app/recibos', icon: ReceiptText },
   { name: 'Notificações', path: '/app/notificacoes', icon: Bell },
   { name: 'Estatísticas', path: '/app/estatisticas', icon: BarChart3 },

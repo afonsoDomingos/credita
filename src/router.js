@@ -18,6 +18,7 @@ import Calendario from './views/Calendario.vue';
 import EmprestimoDetalhes from './views/EmprestimoDetalhes.vue';
 import ReciboPrint from './views/ReciboPrint.vue';
 import ClientePerfil from './views/ClientePerfil.vue';
+import Auditoria from './views/Auditoria.vue';
 const routes = [
   {
     path: '/',
@@ -52,6 +53,7 @@ const routes = [
       { path: 'pagamentos', name: 'Pagamentos', component: Pagamentos },
       { path: 'calendario', name: 'Calendário', component: Calendario },
       { path: 'relatorios', name: 'Relatórios', component: Relatorios },
+      { path: 'auditoria', name: 'Auditoria', component: Auditoria },
       { path: 'recibos', name: 'Recibos', component: Recibos },
       { path: 'notificacoes', name: 'Notificações', component: () => import('./views/Notificacoes.vue') },
       { path: 'estatisticas', name: 'Estatísticas', component: Estatisticas },
