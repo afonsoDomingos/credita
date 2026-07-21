@@ -31,6 +31,10 @@
           <input type="email" placeholder="Email" v-model="loginForm.email" required />
           <input type="password" placeholder="Palavra-passe" v-model="loginForm.password" required />
           
+          <div class="w-full text-right mb-2">
+            <a href="#" @click.prevent="openForgotModal" class="forgot-link">Esqueceu-se da palavra-passe?</a>
+          </div>
+          
           <div v-if="loginError" class="error-msg">{{ loginError }}</div>
           
           <button type="submit" class="btn-solid" :disabled="loading">
@@ -38,6 +42,45 @@
           </button>
           <p class="mobile-toggle mt-4 text-sm">Não tem conta? <a href="#" @click.prevent="isSignUp = true" class="text-green-600 font-bold">Criar Conta</a></p>
         </form>
+      </div>
+
+      <!-- FORGOT PASSWORD MODAL -->
+      <div v-if="showForgotModal" class="modal-overlay" @click.self="closeForgotModal">
+        <div class="modal-content surface text-left">
+          <div class="modal-header flex justify-between items-center mb-4">
+            <h2 class="font-bold text-lg">Recuperar Palavra-passe</h2>
+            <button class="btn-icon" @click="closeForgotModal">✕</button>
+          </div>
+
+          <div v-if="forgotStep === 1">
+            <p class="text-sm text-muted mb-4">Insira o seu endereço de email para receber o código de recuperação de 6 dígitos.</p>
+            <form @submit.prevent="handleForgotPassword" class="modal-form-inline">
+              <input type="email" placeholder="Email *" v-model="forgotEmail" required />
+              <div v-if="forgotMsg" :class="forgotError ? 'error-msg' : 'success-msg'">{{ forgotMsg }}</div>
+              <div class="modal-actions mt-4 flex justify-end gap-2">
+                <button type="button" class="btn-secondary-modal" @click="closeForgotModal">Cancelar</button>
+                <button type="submit" class="btn-solid-sm" :disabled="forgotLoading">
+                  {{ forgotLoading ? 'A enviar...' : 'Enviar Código' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div v-else-if="forgotStep === 2">
+            <p class="text-sm text-muted mb-4">Insira o código de 6 dígitos enviado para <strong>{{ forgotEmail }}</strong> e a sua nova palavra-passe.</p>
+            <form @submit.prevent="handleResetPassword" class="modal-form-inline">
+              <input type="text" placeholder="Código de 6 dígitos *" v-model="resetCode" maxlength="6" required />
+              <input type="password" placeholder="Nova Palavra-passe *" v-model="newPassword" required minlength="6" />
+              <div v-if="forgotMsg" :class="forgotError ? 'error-msg' : 'success-msg'">{{ forgotMsg }}</div>
+              <div class="modal-actions mt-4 flex justify-end gap-2">
+                <button type="button" class="btn-secondary-modal" @click="forgotStep = 1">Voltar</button>
+                <button type="submit" class="btn-solid-sm" :disabled="forgotLoading">
+                  {{ forgotLoading ? 'A redefinir...' : 'Redefinir Password' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
       
       <!-- OVERLAY PANEL -->
@@ -75,6 +118,71 @@ const loginError = ref('');
 
 const regForm = ref({ companyName: '', phone: '', nif: '', email: '', password: '' });
 const regError = ref('');
+
+// Forgot Password State
+const showForgotModal = ref(false);
+const forgotStep = ref(1);
+const forgotEmail = ref('');
+const resetCode = ref('');
+const newPassword = ref('');
+const forgotLoading = ref(false);
+const forgotMsg = ref('');
+const forgotError = ref(false);
+
+const openForgotModal = () => {
+  showForgotModal.value = true;
+  forgotStep.value = 1;
+  forgotEmail.value = loginForm.value.email || '';
+  resetCode.value = '';
+  newPassword.value = '';
+  forgotMsg.value = '';
+  forgotError.value = false;
+};
+
+const closeForgotModal = () => {
+  showForgotModal.value = false;
+};
+
+const handleForgotPassword = async () => {
+  forgotLoading.value = true;
+  forgotMsg.value = '';
+  forgotError.value = false;
+
+  try {
+    const { data } = await api.post('/auth/forgot-password', { email: forgotEmail.value });
+    forgotMsg.value = data.message;
+    forgotStep.value = 2;
+  } catch (error) {
+    forgotError.value = true;
+    forgotMsg.value = error.response?.data?.message || 'Erro ao enviar pedido.';
+  } finally {
+    forgotLoading.value = false;
+  }
+};
+
+const handleResetPassword = async () => {
+  forgotLoading.value = true;
+  forgotMsg.value = '';
+  forgotError.value = false;
+
+  try {
+    const { data } = await api.post('/auth/reset-password', {
+      email: forgotEmail.value,
+      code: resetCode.value,
+      newPassword: newPassword.value
+    });
+    forgotMsg.value = data.message;
+    setTimeout(() => {
+      closeForgotModal();
+      loginForm.value.email = forgotEmail.value;
+    }, 2000);
+  } catch (error) {
+    forgotError.value = true;
+    forgotMsg.value = error.response?.data?.message || 'Erro ao redefinir password.';
+  } finally {
+    forgotLoading.value = false;
+  }
+};
 
 onMounted(() => {
   if (route.path === '/register') {
@@ -355,6 +463,84 @@ input:focus {
   width: 100%;
   margin-top: 10px;
 }
+
+.success-msg {
+  color: #15803D;
+  font-size: 0.875rem;
+  background-color: #DCFCE7;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.forgot-link {
+  font-size: 0.8rem;
+  color: #6B7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.forgot-link:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 440px;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+}
+
+.modal-form-inline input {
+  margin: 6px 0;
+}
+
+.btn-solid-sm {
+  border-radius: 12px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-solid-sm:hover { opacity: 0.9; }
+
+.btn-secondary-modal {
+  border-radius: 12px;
+  background-color: #F3F4F6;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+}
+.btn-secondary-modal:hover { background-color: #E5E7EB; }
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #9CA3AF;
+}
+.btn-icon:hover { color: #1F2937; }
 
 .text-white { color: white; }
 .font-bold { font-weight: 700; }

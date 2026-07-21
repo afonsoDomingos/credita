@@ -21,6 +21,12 @@ const UserSchema = new mongoose.Schema({
     ref: 'Company',
     // Não é obrigatório porque o superadmin não pertence a uma empresa
   },
+  resetPasswordToken: {
+    type: String
+  },
+  resetPasswordExpire: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
