@@ -153,7 +153,7 @@
                 <span class="badge-current">Acesso Total</span>
               </div>
               <div class="price-box mb-4">
-                <span class="text-4xl font-black text-slate-900">MT 95</span>
+                <span class="text-4xl font-black text-slate-900">MT {{ monthlyPlanPrice }}</span>
                 <span class="text-sm font-semibold text-slate-500"> / mês</span>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600">
@@ -168,7 +168,7 @@
 
             <div class="w-full md:w-auto flex-shrink-0">
               <button class="btn-plan-select w-full md:w-auto px-8 py-3.5 shadow-md flex items-center justify-center gap-2" @click="openModalWithPlan('mensal')">
-                <UploadCloud :size="18" /> Selecionar & Pagar 95 MT
+                <UploadCloud :size="18" /> Selecionar & Pagar {{ monthlyPlanPrice }} MT
               </button>
             </div>
           </div>
@@ -201,7 +201,7 @@
                   {{ new Date(rec.createdAt).toLocaleDateString('pt-PT') }} às {{ new Date(rec.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) }}
                 </td>
                 <td class="font-bold text-slate-800 text-xs">
-                  MT {{ rec.amount?.toLocaleString() || '95' }}
+                  MT {{ rec.amount?.toLocaleString() || monthlyPlanPrice }}
                 </td>
                 <td class="text-xs text-muted max-w-xs truncate">
                   {{ rec.notes || 'Sem observações' }}
@@ -233,7 +233,7 @@
         <div class="modal-header flex justify-between items-center mb-6">
           <div>
             <h2 class="font-bold text-lg text-slate-800">Enviar Comprovativo</h2>
-            <p class="text-xs text-muted">Plano selecionado: <strong class="text-blue-600 uppercase">PLANO MENSAL (95 MT)</strong></p>
+            <p class="text-xs text-muted">Plano selecionado: <strong class="text-blue-600 uppercase">PLANO MENSAL ({{ monthlyPlanPrice }} MT)</strong></p>
           </div>
           <button class="btn-icon-close" @click="closeModal">
             <X :size="18" />
@@ -245,7 +245,7 @@
             <label class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1 block">Plano Selecionado</label>
             <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-bold text-blue-900 flex justify-between items-center">
               <span>Plano Mensal - Completo</span>
-              <span class="text-sm text-blue-700">MT 95 / mês</span>
+              <span class="text-sm text-blue-700">MT {{ monthlyPlanPrice }} / mês</span>
             </div>
           </div>
 
@@ -303,6 +303,7 @@ const emolaNumber = ref('+258 86 123 4567');
 const bankAccount = ref('00123456789');
 const accountHolder = ref('Etako Technologies');
 const supportWhatsapp = ref('258840000000');
+const monthlyPlanPrice = ref('95');
 
 const receiptFile = ref(null);
 const notes = ref('');
@@ -354,6 +355,7 @@ const loadData = async () => {
     }
     
     checkoutLink.value = sysRes.data.checkout_link || null;
+    monthlyPlanPrice.value = sysRes.data.monthly_plan_price || '95';
     mpesaNumber.value = sysRes.data.mpesa_number || '+258 84 123 4567';
     emolaNumber.value = sysRes.data.emola_number || '+258 86 123 4567';
     bankAccount.value = sysRes.data.bank_account || '00123456789';
@@ -434,8 +436,8 @@ const enviarComprovativo = async () => {
   try {
     const formData = new FormData();
     formData.append('receipt', receiptFile.value);
-    formData.append('notes', `[Plano Mensal - 95 MT] ${notes.value}`);
-    formData.append('amount', '95');
+    formData.append('notes', `[Plano Mensal - ${monthlyPlanPrice.value} MT] ${notes.value}`);
+    formData.append('amount', monthlyPlanPrice.value);
     
     await api.post('/company/receipts', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

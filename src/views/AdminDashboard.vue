@@ -539,6 +539,15 @@
           </div>
 
           <div class="divider my-4 border-b"></div>
+          <h3 class="font-bold text-sm mb-2 text-indigo-600">Preço da Subscrição</h3>
+
+          <div class="form-group">
+            <label>Preço do Plano Mensal (MT) *</label>
+            <input type="number" v-model="systemForm.monthly_plan_price" placeholder="95" min="1" required />
+            <small class="text-muted mt-1">Valor cobrado mensalmente a cada empresa.</small>
+          </div>
+
+          <div class="divider my-4 border-b"></div>
           <h3 class="font-bold text-sm mb-2 text-blue-600">Dados para Pagamento Manual</h3>
 
           <div class="form-group">
@@ -644,6 +653,7 @@ const form = ref({
 
 const systemForm = ref({ 
   checkout_link: '',
+  monthly_plan_price: '95',
   mpesa_number: '',
   emola_number: '',
   bank_account: '',
@@ -956,6 +966,7 @@ const openSystemSettingsModal = async () => {
   try {
     const { data } = await api.get('/system/settings');
     systemForm.value.checkout_link = data.checkout_link || '';
+    systemForm.value.monthly_plan_price = data.monthly_plan_price || '95';
     systemForm.value.mpesa_number = data.mpesa_number || '';
     systemForm.value.emola_number = data.emola_number || '';
     systemForm.value.bank_account = data.bank_account || '';
@@ -977,6 +988,7 @@ const salvarSystemSettings = async () => {
     // Send array of settings
     const settingsArray = [
       { key: 'checkout_link', value: systemForm.value.checkout_link },
+      { key: 'monthly_plan_price', value: systemForm.value.monthly_plan_price || '95' },
       { key: 'mpesa_number', value: systemForm.value.mpesa_number },
       { key: 'emola_number', value: systemForm.value.emola_number },
       { key: 'bank_account', value: systemForm.value.bank_account },
