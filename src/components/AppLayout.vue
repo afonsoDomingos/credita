@@ -3,6 +3,15 @@
     <Sidebar :collapsed="sidebarCollapsed" @toggle="toggleSidebar" :mobile-open="mobileSidebarOpen" @close-mobile="mobileSidebarOpen = false" />
     
     <div class="main-content-wrapper">
+      
+      <!-- IMPERSONATION BANNER -->
+      <div v-if="isImpersonating" class="impersonation-banner bg-orange-600 text-white p-3 text-center text-sm font-bold flex justify-center items-center gap-4 shadow-md z-50 relative">
+        <span>Atenção: A visualizar como Gestor (Modo Superadmin)</span>
+        <button @click="returnToSuperadmin" class="bg-white text-orange-600 px-3 py-1 rounded-md text-xs hover:bg-orange-50 transition-colors">
+          Voltar ao Superadmin
+        </button>
+      </div>
+
       <Header @toggle-mobile-sidebar="mobileSidebarOpen = true" />
       
       <!-- Expiry Alert Banner -->
@@ -37,9 +46,23 @@ import api from '../api';
 const sidebarCollapsed = ref(false);
 const mobileSidebarOpen = ref(false);
 const daysRemaining = ref(null);
+const isImpersonating = ref(false);
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value;
+};
+
+const returnToSuperadmin = () => {
+  const superToken = localStorage.getItem('superadmin_token');
+  const superUser = localStorage.getItem('superadmin_user');
+  
+  if (superToken && superUser) {
+    localStorage.setItem('token', superToken);
+    localStorage.setItem('user', superUser);
+    localStorage.removeItem('superadmin_token');
+    localStorage.removeItem('superadmin_user');
+    window.location.href = '/admin';
+  }
 };
 
 const loadCompanyData = async () => {
@@ -73,6 +96,7 @@ const handleResize = () => {
 };
 
 onMounted(() => {
+  isImpersonating.value = !!localStorage.getItem('superadmin_token');
   handleResize();
   loadCompanyData();
   window.addEventListener('resize', handleResize);

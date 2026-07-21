@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany } = require('../controllers/adminController');
+const { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany } = require('../controllers/adminController');
 const { updateSetting } = require('../controllers/systemController');
 const { getPendingReceipts, reviewReceipt } = require('../controllers/receiptController');
 const { protect, superadmin } = require('../middleware/authMiddleware');
@@ -16,6 +16,9 @@ router.route('/companies/:id/plan')
 
 router.route('/companies/:id')
   .delete(protect, superadmin, deleteCompany);
+
+router.route('/companies/:id/impersonate')
+  .get(protect, superadmin, impersonateCompany);
 
 router.route('/system/settings')
   .put(protect, superadmin, updateSetting);

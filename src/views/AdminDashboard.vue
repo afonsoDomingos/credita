@@ -108,6 +108,9 @@
             </td>
             <td class="text-right">
               <div class="action-buttons">
+                <button class="action-btn text-purple hover-bg-purple" @click="impersonate(empresa)" title="Entrar como Gestor">
+                  <Eye :size="18" />
+                </button>
                 <button class="action-btn text-blue hover-bg-blue" @click="openPlanModal(empresa)" title="Editar Plano">
                   <Edit :size="18" />
                 </button>
@@ -374,7 +377,7 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send } from '@lucide/vue';
+import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send, Eye } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
 import api from '../api';
@@ -614,6 +617,31 @@ const reviewReceipt = async (id, status) => {
     await loadEmpresas();
   } catch (error) {
     toast.error('Erro ao processar comprovativo.');
+  }
+};
+
+const impersonate = async (empresa) => {
+  try {
+    const { data } = await api.get(`/admin/companies/${empresa._id}/impersonate`);
+    
+    // Backup superadmin info
+    localStorage.setItem('superadmin_token', localStorage.getItem('token'));
+    localStorage.setItem('superadmin_user', localStorage.getItem('user'));
+    
+    // Set new token and user
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify({
+      _id: data._id,
+      email: data.email,
+      role: data.role,
+      company: data.company
+    }));
+    
+    toast.success(`A aceder à conta da ${empresa.name}...`);
+    // Full reload to reset auth state completely in the app
+    window.location.href = '/app';
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Erro ao aceder à empresa.');
   }
 };
 

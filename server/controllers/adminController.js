@@ -85,6 +85,8 @@ const updateCompanyPlan = async (req, res) => {
   }
 };
 
+const jwt = require('jsonwebtoken');
+
 // Apagar Empresa (Hard Delete Cascata)
 const deleteCompany = async (req, res) => {
   try {
@@ -109,4 +111,39 @@ const deleteCompany = async (req, res) => {
   }
 };
 
-module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany };
+// Impersonate (Ver Detalhes da Empresa como Gestor)
+const impersonateCompany = async (req, res) => {
+  try {
+    const companyId = req.params.id;
+    
+    // Check if company exists
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ message: 'Empresa não encontrada' });
+    }
+    
+    // Find the main user/owner of this company
+    const companyUser = await User.findOne({ company: companyId, role: 'empresa' });
+    if (!companyUser) {
+      return res.status(404).json({ message: 'Nenhum utilizador encontrado para esta empresa' });
+    }
+    
+    // Generate JWT for this user
+    const token = jwt.sign({ id: companyUser._id }, process.env.JWT_SECRET || 'etako_super_secret', {
+      expiresIn: '2h', // Short lived token for security during impersonation
+    });
+    
+    res.json({
+      _id: companyUser._id,
+      email: companyUser.email,
+      role: companyUser.role,
+      company: companyUser.company,
+      token
+    });
+  } catch (error) {
+    console.error('Error in impersonate:', error);
+    res.status(500).json({ message: 'Erro ao tentar aceder à empresa' });
+  }
+};
+
+module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany };
