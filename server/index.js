@@ -106,32 +106,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Etako API is running!' });
 });
 
-// Create client with image upload
-app.post('/api/clients', upload.single('profileImage'), async (req, res) => {
-  try {
-    const { name, phone, idCard, address } = req.body;
-    
-    let profileImageUrl = '';
-    if (req.file) {
-      profileImageUrl = req.file.path; // URL do Cloudinary
-    }
-
-    const newClient = new Client({
-      name,
-      phone,
-      idCard,
-      address,
-      profileImageUrl
-    });
-
-    const savedClient = await newClient.save();
-    res.status(201).json(savedClient);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao criar cliente' });
-  }
-});
-
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV !== 'production') {
