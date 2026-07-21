@@ -331,8 +331,13 @@
           <h3 class="font-bold text-sm mb-2 text-blue-600">Dados para Pagamento Manual</h3>
 
           <div class="form-group">
-            <label>Número M-Pesa / E-Mola</label>
+            <label>Número M-Pesa</label>
             <input type="text" v-model="systemForm.mpesa_number" placeholder="Ex: +258 84 123 4567" />
+          </div>
+
+          <div class="form-group">
+            <label>Número e-Mola</label>
+            <input type="text" v-model="systemForm.emola_number" placeholder="Ex: +258 86 123 4567" />
           </div>
 
           <div class="form-group">
@@ -410,6 +415,7 @@ const form = ref({
 const systemForm = ref({ 
   checkout_link: '',
   mpesa_number: '',
+  emola_number: '',
   bank_account: '',
   account_holder: '',
   support_whatsapp: ''
@@ -564,6 +570,7 @@ const openSystemSettingsModal = async () => {
     const { data } = await api.get('/system/settings');
     systemForm.value.checkout_link = data.checkout_link || '';
     systemForm.value.mpesa_number = data.mpesa_number || '';
+    systemForm.value.emola_number = data.emola_number || '';
     systemForm.value.bank_account = data.bank_account || '';
     systemForm.value.account_holder = data.account_holder || '';
     systemForm.value.support_whatsapp = data.support_whatsapp || '';
@@ -584,6 +591,7 @@ const salvarSystemSettings = async () => {
     const settingsArray = [
       { key: 'checkout_link', value: systemForm.value.checkout_link },
       { key: 'mpesa_number', value: systemForm.value.mpesa_number },
+      { key: 'emola_number', value: systemForm.value.emola_number },
       { key: 'bank_account', value: systemForm.value.bank_account },
       { key: 'account_holder', value: systemForm.value.account_holder },
       { key: 'support_whatsapp', value: systemForm.value.support_whatsapp }
