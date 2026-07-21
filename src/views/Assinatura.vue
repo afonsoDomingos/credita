@@ -76,11 +76,12 @@
         
         <div class="bank-accounts flex flex-col gap-4">
           <div class="account-tile hover-lift">
-            <div class="account-icon mpesa-icon shadow-sm">
-              <Smartphone :size="20" />
+            <div class="flex items-center gap-2 mr-4">
+              <img src="/mpesa.png" alt="M-Pesa" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1" />
+              <img src="/emola.png" alt="e-Mola" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1" />
             </div>
             <div class="account-details flex-1">
-              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa / E-Mola</span>
+              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa / e-Mola</span>
               <span class="account-number text-lg font-black text-gray-800">{{ mpesaNumber }}</span>
             </div>
             <button class="copy-btn" title="Copiar" @click="copyText(mpesaNumber)"><Copy :size="18"/></button>
