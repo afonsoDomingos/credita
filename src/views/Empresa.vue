@@ -140,6 +140,19 @@ const salvarDefinicoes = async () => {
     
     form.value.logoUrl = responseData.logoUrl; // Update with new remote URL
     logoFile.value = null; // Clear pending file
+
+    // Synchronize company name in localStorage for Header / User Profile
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        u.name = responseData.name;
+        if (u.company) u.company.name = responseData.name;
+        localStorage.setItem('user', JSON.stringify(u));
+      } catch (e) {
+        console.error('Error updating localStorage user:', e);
+      }
+    }
     
     toast.success('Definições atualizadas com sucesso!');
   } catch (error) {
