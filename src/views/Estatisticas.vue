@@ -1,81 +1,242 @@
 <template>
   <div class="estatisticas-page">
-    <div class="header-actions mb-6">
-      <h1 class="text-xl font-bold">Estatísticas do Negócio</h1>
-      <p class="text-muted text-sm">Acompanhe a saúde financeira da sua carteira de empréstimos.</p>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-header-icon">
+          <BarChart2 :size="22" />
+        </div>
+        <div>
+          <h1 class="page-title">Estatísticas do Negócio</h1>
+          <p class="page-subtitle">Acompanhe a saúde financeira da sua carteira de crédito.</p>
+        </div>
+      </div>
+      <div class="header-badge">
+        <RefreshCw :size="14" />
+        <span>Dados em tempo real</span>
+      </div>
     </div>
 
-    <div v-if="loading" class="loader-wrapper surface">
+    <div v-if="loading" class="loading-state surface">
       <Spinner message="A calcular estatísticas..." />
     </div>
 
     <div v-else>
-      <div class="stats-grid mb-8">
-        <div class="stat-card surface">
-          <div class="stat-icon bg-blue-light text-blue">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon blue">
+              <Users :size="20" />
+            </div>
+            <div class="kpi-trend neutral">
+              <TrendingUp :size="12" />
+              Clientes
+            </div>
           </div>
-          <div class="stat-info">
-            <p class="text-muted text-sm font-semibold">Total Clientes</p>
-            <h3 class="text-2xl font-bold mt-1">{{ stats.totalClientes }}</h3>
-          </div>
+          <div class="kpi-value">{{ stats.totalClientes }}</div>
+          <div class="kpi-label">Total de Clientes</div>
+          <div class="kpi-bar blue-bar" :style="{ width: '100%' }"></div>
         </div>
 
-        <div class="stat-card surface">
-          <div class="stat-icon bg-orange-light text-orange">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon orange">
+              <Activity :size="20" />
+            </div>
+            <div class="kpi-trend orange-trend">
+              <Activity :size="12" />
+              Ativos
+            </div>
           </div>
-          <div class="stat-info">
-            <p class="text-muted text-sm font-semibold">Empréstimos Ativos</p>
-            <h3 class="text-2xl font-bold mt-1">{{ stats.totalEmprestimosAtivos }}</h3>
-          </div>
+          <div class="kpi-value">{{ stats.totalEmprestimosAtivos }}</div>
+          <div class="kpi-label">Empréstimos Ativos</div>
+          <div class="kpi-bar orange-bar" :style="{ width: activeRatio + '%' }"></div>
         </div>
 
-        <div class="stat-card surface">
-          <div class="stat-icon bg-green-light text-green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon green">
+              <Wallet :size="20" />
+            </div>
+            <div class="kpi-trend green-trend">
+              <TrendingUp :size="12" />
+              Recebido
+            </div>
           </div>
-          <div class="stat-info">
-            <p class="text-muted text-sm font-semibold">Total Recebido</p>
-            <h3 class="text-2xl font-bold mt-1 text-green">MZN {{ formatMoney(stats.valorRecebido) }}</h3>
-          </div>
+          <div class="kpi-value success">MT {{ formatMoney(stats.valorRecebido) }}</div>
+          <div class="kpi-label">Capital Recuperado</div>
+          <div class="kpi-bar green-bar" :style="{ width: getRecoveryPercentage() + '%' }"></div>
         </div>
 
-        <div class="stat-card surface">
-          <div class="stat-icon bg-red-light text-red">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon red">
+              <CreditCard :size="20" />
+            </div>
+            <div class="kpi-trend red-trend">
+              <TrendingDown :size="12" />
+              Emprestado
+            </div>
           </div>
-          <div class="stat-info">
-            <p class="text-muted text-sm font-semibold">Total Emprestado (Capital)</p>
-            <h3 class="text-2xl font-bold mt-1 text-red">MZN {{ formatMoney(stats.valorEmprestado) }}</h3>
-          </div>
+          <div class="kpi-value danger">MT {{ formatMoney(stats.valorEmprestado) }}</div>
+          <div class="kpi-label">Capital Total Emprestado</div>
+          <div class="kpi-bar red-bar" :style="{ width: '100%' }"></div>
         </div>
+
       </div>
 
-      <!-- Financial Health -->
-      <div class="surface p-6 mb-8">
-        <h3 class="font-bold text-lg mb-4">Análise de Liquidez (Capital de Giro)</h3>
-        
-        <div class="progress-bar-container">
-          <div class="progress-labels">
-            <span>MZN {{ formatMoney(stats.valorRecebido) }} Recuperados</span>
-            <span>MZN {{ formatMoney(stats.valorEmprestado) }} Emprestados</span>
+      <!-- Metrics Section -->
+      <div class="metrics-grid">
+
+        <!-- Recovery Card -->
+        <div class="metric-card surface">
+          <div class="metric-header">
+            <div class="metric-icon-wrap">
+              <Percent :size="18" />
+            </div>
+            <div>
+              <h3 class="metric-title">Taxa de Recuperação</h3>
+              <p class="metric-subtitle">Percentagem de capital já recuperado</p>
+            </div>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill bg-green" :style="{ width: getRecoveryPercentage() + '%' }"></div>
+
+          <div class="recovery-display">
+            <div class="recovery-circle">
+              <svg viewBox="0 0 120 120" class="circle-svg">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border-color)" stroke-width="10" />
+                <circle
+                  cx="60" cy="60" r="50"
+                  fill="none"
+                  stroke="url(#recoveryGrad)"
+                  stroke-width="10"
+                  stroke-linecap="round"
+                  :stroke-dasharray="`${getRecoveryPercentage() * 3.14} 314`"
+                  stroke-dashoffset="78.5"
+                  transform="rotate(-90 60 60)"
+                />
+                <defs>
+                  <linearGradient id="recoveryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#10B981" />
+                    <stop offset="100%" stop-color="#34D399" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="circle-center">
+                <strong>{{ getRecoveryPercentage() }}%</strong>
+                <span>recuperado</span>
+              </div>
+            </div>
+
+            <div class="recovery-details">
+              <div class="detail-row">
+                <div class="detail-dot green-dot"></div>
+                <div>
+                  <span class="detail-label">Capital Recuperado</span>
+                  <strong class="detail-value success">MT {{ formatMoney(stats.valorRecebido) }}</strong>
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-dot red-dot"></div>
+                <div>
+                  <span class="detail-label">Capital em Risco</span>
+                  <strong class="detail-value danger">MT {{ formatMoney(Math.max(0, stats.valorEmprestado - stats.valorRecebido)) }}</strong>
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-dot blue-dot"></div>
+                <div>
+                  <span class="detail-label">Total Emprestado</span>
+                  <strong class="detail-value">MT {{ formatMoney(stats.valorEmprestado) }}</strong>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="text-center text-sm text-muted mt-2">
-            A sua taxa de recuperação de capital é de <strong>{{ getRecoveryPercentage() }}%</strong>.
-          </p>
         </div>
+
+        <!-- Health Score Card -->
+        <div class="metric-card surface">
+          <div class="metric-header">
+            <div class="metric-icon-wrap purple">
+              <ShieldCheck :size="18" />
+            </div>
+            <div>
+              <h3 class="metric-title">Saúde da Carteira</h3>
+              <p class="metric-subtitle">Indicadores de desempenho chave</p>
+            </div>
+          </div>
+
+          <div class="health-items">
+            <div class="health-item">
+              <div class="health-item-header">
+                <span class="health-label">
+                  <Users :size="14" />
+                  Clientes Totais
+                </span>
+                <strong>{{ stats.totalClientes }}</strong>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar blue-fill" :style="{ width: '100%' }"></div>
+              </div>
+            </div>
+
+            <div class="health-item">
+              <div class="health-item-header">
+                <span class="health-label">
+                  <Activity :size="14" />
+                  Empréstimos Ativos
+                </span>
+                <strong>{{ stats.totalEmprestimosAtivos }}</strong>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar orange-fill" :style="{ width: activeRatio + '%' }"></div>
+              </div>
+            </div>
+
+            <div class="health-item">
+              <div class="health-item-header">
+                <span class="health-label">
+                  <TrendingUp :size="14" />
+                  Taxa de Recuperação
+                </span>
+                <strong :class="getRecoveryPercentage() >= 70 ? 'text-success' : 'text-danger'">
+                  {{ getRecoveryPercentage() }}%
+                </strong>
+              </div>
+              <div class="health-bar-track">
+                <div
+                  class="health-bar"
+                  :class="getRecoveryPercentage() >= 70 ? 'green-fill' : 'red-fill'"
+                  :style="{ width: getRecoveryPercentage() + '%' }"
+                ></div>
+              </div>
+            </div>
+
+            <div class="score-footer">
+              <div class="score-badge" :class="getHealthClass()">
+                <ShieldCheck :size="16" />
+                {{ getHealthLabel() }}
+              </div>
+              <p class="score-desc">{{ getHealthDescription() }}</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { TrendingUp, Users, Wallet, CreditCard, Activity } from '@lucide/vue';
+import { ref, computed, onMounted } from 'vue';
+import {
+  BarChart2, Users, Activity, Wallet, CreditCard,
+  TrendingUp, TrendingDown, Percent, RefreshCw,
+  ShieldCheck
+} from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
@@ -108,112 +269,402 @@ const getRecoveryPercentage = () => {
   return Math.min(Math.round(percent), 100);
 };
 
-onMounted(() => {
-  loadStats();
+const activeRatio = computed(() => {
+  if (!stats.value.totalClientes) return 0;
+  return Math.min(Math.round((stats.value.totalEmprestimosAtivos / stats.value.totalClientes) * 100), 100);
 });
+
+const getHealthClass = () => {
+  const r = getRecoveryPercentage();
+  if (r >= 80) return 'score-excellent';
+  if (r >= 60) return 'score-good';
+  if (r >= 40) return 'score-warning';
+  return 'score-danger';
+};
+
+const getHealthLabel = () => {
+  const r = getRecoveryPercentage();
+  if (r >= 80) return 'Carteira Excelente';
+  if (r >= 60) return 'Carteira Saudável';
+  if (r >= 40) return 'Atenção Necessária';
+  return 'Risco Elevado';
+};
+
+const getHealthDescription = () => {
+  const r = getRecoveryPercentage();
+  if (r >= 80) return 'A sua carteira tem uma performance excelente com alto índice de recuperação.';
+  if (r >= 60) return 'A carteira está em bom estado. Continue a monitorizar os pagamentos pendentes.';
+  if (r >= 40) return 'Há algum risco na carteira. Recomenda-se acompanhamento intensivo dos devedores.';
+  return 'Carteira em risco elevado. Tome medidas urgentes para recuperar os créditos em atraso.';
+};
+
+onMounted(() => loadStats());
 </script>
 
 <style scoped>
-.header-actions {
+.estatisticas-page {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 32px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 24px;
 }
 
-.stat-card {
-  padding: 24px;
+/* ── Page Header ── */
+.page-header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  border-radius: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -10px rgba(0,0,0,0.1);
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.stat-icon {
-  width: 64px;
-  height: 64px;
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-header-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #16A34A;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Loading ── */
+.loading-state {
+  padding: 80px 24px;
   border-radius: 16px;
+  text-align: center;
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12); }
+
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kpi-icon.blue   { background: #EFF6FF; color: #3B82F6; }
+.kpi-icon.orange { background: #FFF7ED; color: #F97316; }
+.kpi-icon.green  { background: #F0FDF4; color: #10B981; }
+.kpi-icon.red    { background: #FEF2F2; color: #EF4444; }
+
+.kpi-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.kpi-trend.neutral      { background: #F3F4F6; color: #6B7280; }
+.kpi-trend.orange-trend { background: #FFF7ED; color: #EA580C; }
+.kpi-trend.green-trend  { background: #F0FDF4; color: #16A34A; }
+.kpi-trend.red-trend    { background: #FEF2F2; color: #DC2626; }
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kpi-value.success { color: #10B981; }
+.kpi-value.danger  { color: #EF4444; }
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Progress bar bottom of each kpi card */
+.kpi-bar {
+  height: 3px;
+  border-radius: 3px;
+  margin-top: 8px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.blue-bar   { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.orange-bar { background: linear-gradient(90deg, #FCD34D, #F97316); }
+.green-bar  { background: linear-gradient(90deg, #6EE7B7, #10B981); }
+.red-bar    { background: linear-gradient(90deg, #FCA5A5, #EF4444); }
+
+/* ── Metrics Grid ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.metric-card {
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  padding: 28px;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.metric-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10B981, #34D399);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-
-.stat-icon svg {
-  width: 28px;
-  height: 28px;
+.metric-icon-wrap.purple {
+  background: linear-gradient(135deg, #8B5CF6, #A78BFA);
 }
 
-.stat-info {
+.metric-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 4px;
+}
+.metric-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Recovery Card ── */
+.recovery-display {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
+  align-items: center;
+  gap: 32px;
 }
 
-.stat-info h3 {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 1.25rem;
+.recovery-circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
 }
 
-/* Colors */
-.bg-blue-light { background-color: #EFF6FF; }
-.text-blue { color: #3B82F6; }
-.bg-orange-light { background-color: #FFF7ED; }
-.text-orange { color: #F97316; }
-.bg-green-light { background-color: #F0FDF4; }
-.text-green { color: #16A34A; }
-.bg-green { background-color: #10B981; }
-.bg-red-light { background-color: #FEF2F2; }
-.text-red { color: #EF4444; }
-
-/* Progress bar */
-.progress-bar-container {
-  margin-top: 24px;
-  padding: 12px 0;
+.circle-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(0deg);
 }
 
-.progress-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
+.circle-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  line-height: 1.2;
+}
+.circle-center strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: var(--text-main);
 }
+.circle-center span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
 
-.progress-track {
+.recovery-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.green-dot { background: #10B981; }
+.red-dot   { background: #EF4444; }
+.blue-dot  { background: #3B82F6; }
+
+.detail-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.detail-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.detail-value.success { color: #10B981; }
+.detail-value.danger  { color: #EF4444; }
+
+/* ── Health Card ── */
+.health-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.health-item { display: flex; flex-direction: column; gap: 8px; }
+
+.health-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.health-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.health-bar-track {
   width: 100%;
-  height: 16px;
-  background-color: var(--border-color);
-  border-radius: 8px;
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.progress-fill {
+.health-bar {
   height: 100%;
-  background-color: #10B981;
-  border-radius: 8px;
-  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  transition: width 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.blue-fill   { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.orange-fill { background: linear-gradient(90deg, #FCD34D, #F97316); }
+.green-fill  { background: linear-gradient(90deg, #6EE7B7, #10B981); }
+.red-fill    { background: linear-gradient(90deg, #FCA5A5, #EF4444); }
+
+.text-success { color: #10B981; }
+.text-danger  { color: #EF4444; }
+
+/* Score badge */
+.score-footer {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
 }
 
-.loader-wrapper {
-  padding: 60px 0;
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
   border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.score-excellent { background: #DCFCE7; color: #15803D; }
+.score-good      { background: #DBEAFE; color: #1D4ED8; }
+.score-warning   { background: #FEF9C3; color: #854D0E; }
+.score-danger    { background: #FEE2E2; color: #B91C1C; }
+
+.score-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .metrics-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .recovery-display { flex-direction: column; align-items: center; }
+}
+@media (max-width: 400px) {
+  .kpi-grid { grid-template-columns: 1fr; }
 }
 </style>

@@ -1,82 +1,191 @@
 <template>
   <div class="relatorios-page">
-    <div class="header-actions mb-6">
-      <h1 class="text-xl font-bold">Relatório de Empréstimos</h1>
-      <p class="text-muted text-sm">Listagem completa e detalhada da carteira de crédito.</p>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-header-icon">
+          <FileBarChart :size="22" />
+        </div>
+        <div>
+          <h1 class="page-title">Relatório de Empréstimos</h1>
+          <p class="page-subtitle">Listagem completa e detalhada da carteira de crédito.</p>
+        </div>
+      </div>
+      <div class="header-actions no-print">
+        <button class="btn-export" @click="exportarCSV" :disabled="loading || loans.length === 0">
+          <Download :size="16" />
+          Exportar CSV
+        </button>
+        <button class="btn-print" @click="imprimirRelatorio" :disabled="loading">
+          <Printer :size="16" />
+          Imprimir
+        </button>
+      </div>
     </div>
 
-    <div class="surface p-0 overflow-hidden">
-      <div v-if="loading" class="loader-wrapper">
-        <Spinner message="A gerar relatório..." />
+    <div v-if="loading" class="loading-state surface">
+      <Spinner message="A gerar relatório..." />
+    </div>
+
+    <div v-else>
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid no-print">
+        <div class="kpi-card blue">
+          <div class="kpi-icon">
+            <CreditCard :size="20" />
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Total Empréstimos</span>
+            <strong class="kpi-value">{{ loans.length }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-icon">
+            <TrendingDown :size="20" />
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Capital Emprestado</span>
+            <strong class="kpi-value">MT {{ formatMoney(somaCapital) }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-icon">
+            <TrendingUp :size="20" />
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Retorno Esperado</span>
+            <strong class="kpi-value">MT {{ formatMoney(somaRetorno) }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-icon">
+            <Percent :size="20" />
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Lucro Esperado</span>
+            <strong class="kpi-value">MT {{ formatMoney(somaRetorno - somaCapital) }}</strong>
+          </div>
+        </div>
       </div>
-      
-      <div v-else>
-        <div class="p-4 border-b flex justify-between items-center no-print">
-          <p class="text-sm text-muted">A mostrar {{ loans.length }} empréstimos no histórico.</p>
-          <div class="flex items-center gap-3">
-            <button class="btn-export flex items-center gap-2" @click="exportarCSV">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-              Exportar Excel
-            </button>
-            <button class="btn-secondary" @click="imprimirRelatorio">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimir
-            </button>
+
+      <!-- Filters + Table Card -->
+      <div class="table-card surface">
+
+        <!-- Toolbar -->
+        <div class="table-toolbar no-print">
+          <div class="toolbar-info">
+            <span class="count-badge">{{ loansFiltrados.length }} empréstimos</span>
+          </div>
+          <div class="toolbar-filters">
+            <div class="search-wrapper">
+              <Search :size="15" class="search-icon" />
+              <input
+                type="text"
+                v-model="filtroTexto"
+                placeholder="Pesquisar cliente..."
+                class="search-input"
+              />
+            </div>
+            <select v-model="filtroStatus" class="status-select">
+              <option value="">Todos os estados</option>
+              <option value="pending">Pendente</option>
+              <option value="active">Ativo</option>
+              <option value="paid">Pago</option>
+              <option value="defaulted">Em Falha</option>
+            </select>
           </div>
         </div>
 
-        <div style="overflow-x: auto;">
+        <!-- Table -->
+        <div class="table-wrapper">
           <table class="data-table">
             <thead>
               <tr>
                 <th>Data Início</th>
                 <th>Cliente</th>
-                <th>Capital Emprestado</th>
-                <th>Juro (%)</th>
-                <th>Retorno Esperado</th>
+                <th>Capital</th>
+                <th>Juro</th>
+                <th>Retorno Total</th>
                 <th>Estado</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="loan in loans" :key="loan._id">
-                <td>{{ formatDate(loan.startDate) }}</td>
-                <td class="font-medium">{{ loan.client?.name || 'Cliente Removido' }}</td>
-                <td>MZN {{ loan.amount.toFixed(2) }}</td>
-                <td>{{ loan.interestRate }}%</td>
-                <td class="font-bold">MZN {{ calcularTotal(loan).toFixed(2) }}</td>
+              <tr v-for="loan in loansFiltrados" :key="loan._id" class="table-row">
+                <td class="date-cell">
+                  <div class="date-wrapper">
+                    <Calendar :size="13" class="date-icon" />
+                    {{ formatDate(loan.startDate) }}
+                  </div>
+                </td>
                 <td>
-                  <span class="badge" :class="getStatusClass(loan.status)">
+                  <div class="client-cell">
+                    <div class="client-avatar">{{ getInitials(loan.client?.name) }}</div>
+                    <span class="client-name">{{ loan.client?.name || 'Cliente Removido' }}</span>
+                  </div>
+                </td>
+                <td class="mono text-danger">MT {{ formatMoney(loan.amount) }}</td>
+                <td>
+                  <span class="interest-badge">{{ loan.interestRate }}%</span>
+                </td>
+                <td class="mono font-bold text-success">MT {{ formatMoney(calcularTotal(loan)) }}</td>
+                <td>
+                  <span class="status-badge" :class="getStatusClass(loan.status)">
                     {{ getStatusLabel(loan.status) }}
                   </span>
                 </td>
               </tr>
-              <tr v-if="loans.length === 0">
-                <td colspan="6" class="text-center p-6 text-muted">Sem registos de empréstimos.</td>
+
+              <tr v-if="loansFiltrados.length === 0">
+                <td colspan="6" class="empty-row">
+                  <div class="empty-inline">
+                    <FileBarChart :size="32" />
+                    <span>Nenhum empréstimo encontrado com os filtros aplicados.</span>
+                  </div>
+                </td>
               </tr>
             </tbody>
-            <tfoot v-if="loans.length > 0">
+
+            <!-- Totals Footer -->
+            <tfoot v-if="loansFiltrados.length > 0">
               <tr class="tfoot-row">
-                <td colspan="2" class="text-right font-bold">TOTAIS DA CARTEIRA:</td>
-                <td class="font-bold text-red">MZN {{ somaCapital.toFixed(2) }}</td>
+                <td colspan="2" class="tfoot-label">
+                  <BarChart2 :size="14" />
+                  TOTAIS DA CARTEIRA FILTRADA
+                </td>
+                <td class="mono font-bold text-danger">MT {{ formatMoney(somaCapitalFiltrado) }}</td>
                 <td></td>
-                <td class="font-bold text-green">MZN {{ somaRetorno.toFixed(2) }}</td>
-                <td></td>
+                <td class="mono font-bold text-success">MT {{ formatMoney(somaRetornoFiltrado) }}</td>
+                <td>
+                  <span class="profit-chip">
+                    +MT {{ formatMoney(somaRetornoFiltrado - somaCapitalFiltrado) }}
+                  </span>
+                </td>
               </tr>
             </tfoot>
           </table>
         </div>
+
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import {
+  FileBarChart, Download, Printer, CreditCard,
+  TrendingUp, TrendingDown, Percent, Search,
+  Calendar, BarChart2
+} from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const loans = ref([]);
 const loading = ref(true);
+const filtroTexto = ref('');
+const filtroStatus = ref('');
 
 const loadData = async () => {
   try {
@@ -89,54 +198,58 @@ const loadData = async () => {
   }
 };
 
+const loansFiltrados = computed(() => {
+  return loans.value.filter(loan => {
+    const matchTexto = !filtroTexto.value ||
+      (loan.client?.name || '').toLowerCase().includes(filtroTexto.value.toLowerCase());
+    const matchStatus = !filtroStatus.value || loan.status === filtroStatus.value;
+    return matchTexto && matchStatus;
+  });
+});
+
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return '—';
   return new Date(dateString).toLocaleDateString('pt-PT');
+};
+
+const formatMoney = (value) => {
+  return Number(value || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 const calcularTotal = (loan) => {
   return loan.amount + (loan.amount * (loan.interestRate / 100));
 };
 
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
+
 const getStatusLabel = (status) => {
-  const labels = {
-    'pending': 'Pendente',
-    'active': 'Ativo',
-    'paid': 'Pago',
-    'defaulted': 'Em Falha'
-  };
+  const labels = { 'pending': 'Pendente', 'active': 'Ativo', 'paid': 'Pago', 'defaulted': 'Em Falha' };
   return labels[status] || status;
 };
 
 const getStatusClass = (status) => {
   const classes = {
-    'pending': 'bg-yellow text-yellow-dark',
-    'active': 'bg-blue text-blue-dark',
-    'paid': 'bg-green text-green-dark',
-    'defaulted': 'bg-red text-red-dark'
+    'pending': 'status-pending',
+    'active': 'status-active',
+    'paid': 'status-paid',
+    'defaulted': 'status-defaulted'
   };
   return classes[status] || '';
 };
 
-const somaCapital = computed(() => {
-  return loans.value.reduce((acc, curr) => acc + curr.amount, 0);
-});
+const somaCapital = computed(() => loans.value.reduce((acc, l) => acc + l.amount, 0));
+const somaRetorno = computed(() => loans.value.reduce((acc, l) => acc + calcularTotal(l), 0));
+const somaCapitalFiltrado = computed(() => loansFiltrados.value.reduce((acc, l) => acc + l.amount, 0));
+const somaRetornoFiltrado = computed(() => loansFiltrados.value.reduce((acc, l) => acc + calcularTotal(l), 0));
 
-const somaRetorno = computed(() => {
-  return loans.value.reduce((acc, curr) => acc + calcularTotal(curr), 0);
-});
-
-const imprimirRelatorio = () => {
-  window.print();
-};
+const imprimirRelatorio = () => window.print();
 
 const exportarCSV = () => {
   if (loans.value.length === 0) return;
-  
-  // Cabeçalhos
-  const headers = ['Data Início', 'Cliente', 'BI/NIF', 'Capital Emprestado', 'Juro (%)', 'Retorno Esperado', 'Estado'];
-  
-  // Linhas
+  const headers = ['Data Início', 'Cliente', 'BI/NIF', 'Capital (MT)', 'Juro (%)', 'Retorno (MT)', 'Estado'];
   const rows = loans.value.map(loan => [
     formatDate(loan.createdAt || loan.startDate),
     loan.client?.name || 'Cliente Removido',
@@ -146,125 +259,367 @@ const exportarCSV = () => {
     calcularTotal(loan).toFixed(2),
     getStatusLabel(loan.status)
   ]);
-  
-  // Totais
   rows.push([]);
   rows.push(['', 'TOTAIS', '', somaCapital.value.toFixed(2), '', somaRetorno.value.toFixed(2), '']);
-  
-  // Montar CSV com BOM para Excel reconhecer acentos
   const csvContent = '\uFEFF' + [headers, ...rows]
     .map(row => row.map(cell => `"${cell}"`).join(';'))
     .join('\n');
-  
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `relatorio_emprestimos_${new Date().toISOString().slice(0,10)}.csv`;
+  link.download = `relatorio_emprestimos_${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 };
 
-onMounted(() => {
-  loadData();
-});
+onMounted(() => loadData());
 </script>
 
 <style scoped>
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
+.relatorios-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.data-table th, .data-table td {
-  padding: 14px 20px;
-  text-align: left;
+/* ── Page Header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-header-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #0EA5E9, #3B82F6);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-export, .btn-print {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+.btn-export:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+
+.btn-print {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+.btn-print:hover:not(:disabled) { background: var(--bg-body); }
+
+.btn-export:disabled, .btn-print:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Loading ── */
+.loading-state {
+  padding: 80px 24px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgba(0,0,0,0.1); }
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-card.blue .kpi-icon { background: #EFF6FF; color: #3B82F6; }
+.kpi-card.red .kpi-icon { background: #FEF2F2; color: #EF4444; }
+.kpi-card.green .kpi-icon { background: #F0FDF4; color: #10B981; }
+.kpi-card.purple .kpi-icon { background: #F5F3FF; color: #8B5CF6; }
+
+.kpi-info { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.kpi-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+.kpi-value { font-size: 1.05rem; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Table Card ── */
+.table-card {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  padding: 0;
+}
+
+/* Toolbar */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--bg-body);
+}
+
+.count-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.toolbar-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 8px 14px 8px 34px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  width: 200px;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: #3B82F6; }
+
+.status-select {
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+}
+.status-select:focus { border-color: #3B82F6; }
+
+/* Table */
+.table-wrapper { overflow-x: auto; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+
+.data-table th {
+  padding: 12px 20px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  background: var(--bg-body);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.table-row { transition: background 0.15s; }
+.table-row:hover { background: var(--bg-body); }
+.table-row:last-child td { border-bottom: none; }
+
+/* Date cell */
+.date-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.date-icon { flex-shrink: 0; }
+
+/* Client cell */
+.client-cell { display: flex; align-items: center; gap: 10px; }
+.client-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.client-name { font-weight: 600; }
+
+/* Badges */
+.interest-badge {
+  background: #FFF7ED;
+  color: #C2410C;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-pending { background: #FEF9C3; color: #854D0E; }
+.status-active  { background: #DBEAFE; color: #1D4ED8; }
+.status-paid    { background: #DCFCE7; color: #15803D; }
+.status-defaulted { background: #FEE2E2; color: #B91C1C; }
+
+/* Mono / Colors */
+.mono { font-family: 'Courier New', monospace; font-weight: 600; }
+.text-danger { color: #EF4444; }
+.text-success { color: #10B981; }
+.font-bold { font-weight: 700; }
+
+/* Footer */
+.tfoot-row td {
+  background: var(--bg-body);
+  border-top: 2px solid var(--border-color);
+  padding: 14px 20px;
   font-size: 0.9rem;
 }
 
-.data-table th {
-  background-color: var(--bg-body);
-  color: var(--text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
+.tfoot-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.tfoot-row td {
-  background-color: var(--bg-body);
-  border-top: 2px solid var(--border-color);
-  padding: 16px 20px;
+.profit-chip {
+  background: #F0FDF4;
+  color: #16A34A;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.text-green { color: #16A34A; }
-.text-red { color: #EF4444; }
-
-.badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+/* Empty inline */
+.empty-row { text-align: center; padding: 60px 20px !important; }
+.empty-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
-.bg-yellow { background-color: #FEF08A; }
-.text-yellow-dark { color: #854D0E; }
-.bg-blue { background-color: #BFDBFE; }
-.text-blue-dark { color: #1E3A8A; }
-.bg-green { background-color: #BBF7D0; }
-.text-green-dark { color: #14532D; }
-.badge-danger {
-  background-color: #FEE2E2;
-  color: #DC2626;
-}
-
-.loader-wrapper {
-  padding: 60px 0;
-}
-
-.btn-secondary {
-  padding: 8px 16px;
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-secondary:hover { background-color: var(--bg-body); }
-
-.btn-export {
-  padding: 8px 16px;
-  background-color: #10B981;
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-export:hover { background-color: #059669; }
+/* ── Print ── */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  
-  .relatorios-page, .relatorios-page * {
-    visibility: visible;
-  }
-  
-  .relatorios-page {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
+  .no-print { display: none !important; }
+  body * { visibility: hidden; }
+  .relatorios-page, .relatorios-page * { visibility: visible; }
+  .relatorios-page { position: absolute; left: 0; top: 0; width: 100%; }
+}
 
-  .no-print {
-    display: none !important;
-  }
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .table-toolbar { flex-direction: column; align-items: stretch; }
+  .search-input { width: 100%; }
 }
 </style>
