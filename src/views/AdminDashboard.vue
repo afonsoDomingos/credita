@@ -515,9 +515,10 @@
           <div class="form-group">
             <label>Novo Plano *</label>
             <select v-model="planForm.plan" required class="form-select">
-              <option value="trial">Trial</option>
-              <option value="pro">Pro</option>
-              <option value="premium">Premium</option>
+              <option value="trial">Trial (Teste)</option>
+              <option value="mensal">Plano Mensal</option>
+              <option value="pro">Pro (Antigo)</option>
+              <option value="premium">Premium (Antigo)</option>
             </select>
           </div>
 
