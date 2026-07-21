@@ -137,83 +137,40 @@
         </div>
       </div>
 
-      <!-- Gestão de Planos de Subscrição (Cards de Planos) -->
+      <!-- Gestão de Plano Único de Subscrição -->
       <div class="plans-section space-y-4">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">Planos de Subscrição Disponíveis</h2>
-          <p class="text-muted text-xs mt-0.5">Selecione o plano ideal para a sua empresa e faça o upgrade a qualquer momento.</p>
+          <h2 class="text-xl font-bold text-slate-800">Plano de Subscrição</h2>
+          <p class="text-muted text-xs mt-0.5">Acesso completo a todas as funcionalidades da plataforma por um valor mensal acessível.</p>
         </div>
 
-        <div class="grid-3-plans">
-          <!-- Plano Mensal -->
-          <div class="surface plan-card rounded-2xl border p-6 flex flex-col justify-between transition-all" :class="plan === 'mensal' ? 'plan-active-border' : ''">
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <span class="plan-tag bg-blue-50 text-blue-700">Mensal</span>
-                <span v-if="plan === 'mensal'" class="badge-current">Plano Atual</span>
+        <div class="single-plan-wrapper">
+          <!-- Plano Mensal Único -->
+          <div class="surface plan-card rounded-2xl border p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden plan-active-border shadow-sm">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="plan-tag bg-blue-100 text-blue-700 font-bold">Plano Mensal</span>
+                <span class="badge-current">Acesso Total</span>
               </div>
               <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 150</span>
-                <span class="text-xs text-muted"> / mês</span>
+                <span class="text-4xl font-black text-slate-900">MT 95</span>
+                <span class="text-sm font-semibold text-slate-500"> / mês</span>
               </div>
-              <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Empréstimos Ilimitados</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Gestão Completa de Clientes</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Cobranças via WhatsApp</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Exportação Excel / PDF</li>
-              </ul>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600">
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Empréstimos e Amortizações Ilimitados</div>
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Gestão Completa de Clientes & Score</div>
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Lembretes e Cobranças via WhatsApp</div>
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Exportação de Relatórios Excel / PDF</div>
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Log de Auditoria & Segurança de Dados</div>
+                <div class="flex items-center gap-2"><CheckCircle :size="16" class="text-emerald-500 flex-shrink-0" /> Suporte Técnico Dedicado</div>
+              </div>
             </div>
-            <button class="btn-plan w-full" :class="plan === 'mensal' ? 'btn-plan-disabled' : 'btn-plan-select'" @click="openModalWithPlan('mensal')">
-              {{ plan === 'mensal' ? 'Plano Atual' : 'Escolher Mensal' }}
-            </button>
-          </div>
 
-          <!-- Plano Trimestral -->
-          <div class="surface plan-card rounded-2xl border p-6 flex flex-col justify-between transition-all relative overflow-hidden" :class="plan === 'trimestral' ? 'plan-active-border' : ''">
-            <div class="plan-ribbon bg-amber-500 text-white">Desconto MT 50</div>
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <span class="plan-tag bg-amber-50 text-amber-700">Trimestral</span>
-                <span v-if="plan === 'trimestral'" class="badge-current">Plano Atual</span>
-              </div>
-              <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 400</span>
-                <span class="text-xs text-muted"> / 3 meses</span>
-              </div>
-              <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Todas as funcionalidades do Mensal</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Economize MT 50 no período</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Suporte prioritário</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Log de Atividades & Auditoria</li>
-              </ul>
+            <div class="w-full md:w-auto flex-shrink-0">
+              <button class="btn-plan-select w-full md:w-auto px-8 py-3.5 shadow-md flex items-center justify-center gap-2" @click="openModalWithPlan('mensal')">
+                <UploadCloud :size="18" /> Selecionar & Pagar 95 MT
+              </button>
             </div>
-            <button class="btn-plan w-full" :class="plan === 'trimestral' ? 'btn-plan-disabled' : 'btn-plan-select'" @click="openModalWithPlan('trimestral')">
-              {{ plan === 'trimestral' ? 'Plano Atual' : 'Escolher Trimestral' }}
-            </button>
-          </div>
-
-          <!-- Plano Anual -->
-          <div class="surface plan-card rounded-2xl border p-6 flex flex-col justify-between transition-all relative overflow-hidden" :class="plan === 'anual' ? 'plan-active-border' : ''">
-            <div class="plan-ribbon bg-emerald-600 text-white">2 Meses Grátis</div>
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <span class="plan-tag bg-emerald-50 text-emerald-700">Anual</span>
-                <span v-if="plan === 'anual'" class="badge-current">Plano Atual</span>
-              </div>
-              <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 1.500</span>
-                <span class="text-xs text-muted"> / ano</span>
-              </div>
-              <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Todas as funcionalidades Pro</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> 2 Meses de acesso Grátis</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Backup Diário em Nuvem</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Apoio personalizado dedicado</li>
-              </ul>
-            </div>
-            <button class="btn-plan w-full" :class="plan === 'anual' ? 'btn-plan-disabled' : 'btn-plan-select'" @click="openModalWithPlan('anual')">
-              {{ plan === 'anual' ? 'Plano Atual' : 'Escolher Anual' }}
-            </button>
           </div>
         </div>
       </div>
@@ -244,7 +201,7 @@
                   {{ new Date(rec.createdAt).toLocaleDateString('pt-PT') }} às {{ new Date(rec.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) }}
                 </td>
                 <td class="font-bold text-slate-800 text-xs">
-                  MT {{ rec.amount?.toLocaleString() || '150' }}
+                  MT {{ rec.amount?.toLocaleString() || '95' }}
                 </td>
                 <td class="text-xs text-muted max-w-xs truncate">
                   {{ rec.notes || 'Sem observações' }}
@@ -276,7 +233,7 @@
         <div class="modal-header flex justify-between items-center mb-6">
           <div>
             <h2 class="font-bold text-lg text-slate-800">Enviar Comprovativo</h2>
-            <p class="text-xs text-muted">Plano selecionado: <strong class="text-blue-600 uppercase">{{ selectedPlanForModal }}</strong></p>
+            <p class="text-xs text-muted">Plano selecionado: <strong class="text-blue-600 uppercase">PLANO MENSAL (95 MT)</strong></p>
           </div>
           <button class="btn-icon-close" @click="closeModal">
             <X :size="18" />
@@ -285,12 +242,11 @@
         
         <form @submit.prevent="enviarComprovativo" class="modal-form">
           <div class="form-group mb-4">
-            <label class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1 block">Plano Desejado</label>
-            <select v-model="selectedPlanForModal" class="premium-select w-full">
-              <option value="mensal">Plano Mensal - MT 150 / mês</option>
-              <option value="trimestral">Plano Trimestral - MT 400 / 3 meses</option>
-              <option value="anual">Plano Anual - MT 1.500 / ano</option>
-            </select>
+            <label class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1 block">Plano Selecionado</label>
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-bold text-blue-900 flex justify-between items-center">
+              <span>Plano Mensal - Completo</span>
+              <span class="text-sm text-blue-700">MT 95 / mês</span>
+            </div>
           </div>
 
           <div class="upload-area-wrapper mb-4 relative">
@@ -478,8 +434,8 @@ const enviarComprovativo = async () => {
   try {
     const formData = new FormData();
     formData.append('receipt', receiptFile.value);
-    formData.append('notes', `[Plano ${selectedPlanForModal.value.toUpperCase()}] ${notes.value}`);
-    formData.append('amount', selectedPlanForModal.value === 'anual' ? '15000' : selectedPlanForModal.value === 'trimestral' ? '4000' : '1500');
+    formData.append('notes', `[Plano Mensal - 95 MT] ${notes.value}`);
+    formData.append('amount', '95');
     
     await api.post('/company/receipts', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
