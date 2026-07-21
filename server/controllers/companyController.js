@@ -3,12 +3,16 @@ const Company = require('../models/Company');
 // Obter dados da própria empresa
 const getSettings = async (req, res) => {
   try {
+    if (!req.user.company) {
+      return res.status(400).json({ message: 'Utilizador sem empresa associada' });
+    }
     const company = await Company.findById(req.user.company);
     if (!company) {
       return res.status(404).json({ message: 'Empresa não encontrada' });
     }
     res.json(company);
   } catch (error) {
+    console.error('Error in getSettings:', error);
     res.status(500).json({ message: 'Erro ao buscar dados da empresa' });
   }
 };
