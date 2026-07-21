@@ -502,7 +502,6 @@ const loadEmpresas = async () => {
 };
 
 const loadFinance = async () => {
-  if (financeData.value) return; // Já carregado
   loadingFinance.value = true;
   try {
     const { data } = await api.get('/admin/finance');
@@ -684,6 +683,12 @@ const reviewReceipt = async (id, status) => {
     await api.put(`/admin/receipts/${id}/review`, { status });
     toast.success(`Comprovativo ${status === 'approved' ? 'Aprovado' : 'Rejeitado'}!`);
     await loadEmpresas();
+    
+    // Atualizar dados financeiros em background para manter sincronia
+    if (activeTab.value === 'faturacao' || financeData.value) {
+      const { data } = await api.get('/admin/finance');
+      financeData.value = data;
+    }
   } catch (error) {
     toast.error('Erro ao processar comprovativo.');
   }
