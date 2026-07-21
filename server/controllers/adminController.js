@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Client = require('../models/Client');
 const Loan = require('../models/Loan');
 const Payment = require('../models/Payment');
+const Notification = require('../models/Notification');
 
 // ... (existing createCompany and toggleCompanyStatus will be preserved using StartLine=4)
 
@@ -59,6 +60,17 @@ const toggleCompanyStatus = async (req, res) => {
     company.isActive = !company.isActive;
     await company.save();
 
+    // Notificar os utilizadores da empresa
+    await Notification.create({
+      company: company._id,
+      role: 'empresa',
+      title: company.isActive ? 'Conta Reativada! 🟢' : 'Conta Suspensa 🛑',
+      message: company.isActive 
+        ? 'A sua conta da plataforma foi reativada com sucesso. Já pode aceder a todas as funcionalidades.' 
+        : 'A sua conta foi temporariamente suspensa pelo administrador do sistema. Contacte o suporte para mais informações.',
+      type: company.isActive ? 'success' : 'alert'
+    });
+
     res.json({
       message: `Empresa ${company.isActive ? 'ativada' : 'suspensa'} com sucesso`,
       company
@@ -73,11 +85,33 @@ const toggleCompanyStatus = async (req, res) => {
 const updateCompanyPlan = async (req, res) => {
   try {
     const { plan } = req.body;
-    const company = await Company.findByIdAndUpdate(req.params.id, { subscriptionPlan: plan }, { new: true });
+    const company = await Company.findById(req.params.id);
     
     if (!company) {
       return res.status(404).json({ message: 'Empresa não encontrada' });
     }
+
+    company.subscriptionPlan = plan;
+    await company.save();
+
+    // Traduzir plano para exibição
+    const planNames = {
+      trial: 'Trial (Teste)',
+      mensal: 'Plano Mensal',
+      pro: 'Pro (Antigo)',
+      premium: 'Premium (Antigo)'
+    };
+    const planText = planNames[plan] || plan;
+
+    // Notificar os utilizadores da empresa
+    await Notification.create({
+      company: company._id,
+      role: 'empresa',
+      title: 'Plano de Subscrição Atualizado ⚙️',
+      message: `O seu plano de subscrição foi atualizado manualmente para "${planText}".`,
+      type: 'info'
+    });
+
     res.json({ message: 'Plano atualizado com sucesso', company });
   } catch (error) {
     console.error('Error updating plan:', error);

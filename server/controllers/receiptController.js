@@ -2,6 +2,8 @@ const Receipt = require('../models/Receipt');
 const Company = require('../models/Company');
 const SystemSetting = require('../models/SystemSetting');
 
+const Notification = require('../models/Notification');
+
 const uploadReceipt = async (req, res) => {
   try {
     if (!req.file) {
@@ -35,6 +37,14 @@ const uploadReceipt = async (req, res) => {
     if (company) {
       company.subscriptionStatus = 'pending_verification';
       await company.save();
+      
+      // Notificar Superadmin sobre o envio do comprovativo
+      await Notification.create({
+        role: 'superadmin',
+        title: 'Novo Comprovativo Recebido',
+        message: `A empresa "${company.name}" submeteu um comprovativo de MT ${amount} para o mês de ${billingMonth}.`,
+        type: 'billing'
+      });
     }
 
     res.status(201).json(savedReceipt);
@@ -100,12 +110,36 @@ const reviewReceipt = async (req, res) => {
 
         company.nextBillingDate = nextBillingDate;
         await company.save();
+
+        // Notificar a empresa
+        const monthText = receipt.billingMonth 
+          ? new Date(receipt.billingMonth.split('-')[0], receipt.billingMonth.split('-')[1] - 1, 1).toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' })
+          : 'Mês selecionado';
+          
+        await Notification.create({
+          company: company._id,
+          role: 'empresa',
+          title: 'Subscrição Ativada! 🎉',
+          message: `O seu comprovativo de pagamento de MT ${receipt.amount} para o mês de ${monthText} foi aprovado. A sua conta está ativa até dia ${nextBillingDate.toLocaleDateString('pt-PT')}.`,
+          type: 'success'
+        });
       }
     } else if (status === 'rejected') {
       const company = await Company.findById(receipt.company);
-      if (company && company.subscriptionStatus === 'pending_verification') {
-        company.subscriptionStatus = 'expired';
-        await company.save();
+      if (company) {
+        if (company.subscriptionStatus === 'pending_verification') {
+          company.subscriptionStatus = 'expired';
+          await company.save();
+        }
+
+        // Notificar a empresa
+        await Notification.create({
+          company: company._id,
+          role: 'empresa',
+          title: 'Comprovativo Rejeitado ⚠️',
+          message: `O comprovativo de pagamento submetido foi rejeitado pela nossa equipa. Por favor, aceda a Assinatura & Faturação e envie um comprovativo válido ou fale connosco.`,
+          type: 'alert'
+        });
       }
     }
 
