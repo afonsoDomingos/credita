@@ -79,4 +79,13 @@ const reviewReceipt = async (req, res) => {
   }
 };
 
-module.exports = { uploadReceipt, getPendingReceipts, reviewReceipt };
+const getMyReceipts = async (req, res) => {
+  try {
+    const receipts = await Receipt.find({ company: req.user.company }).sort({ createdAt: -1 });
+    res.json(receipts);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar comprovativos.' });
+  }
+};
+
+module.exports = { uploadReceipt, getPendingReceipts, reviewReceipt, getMyReceipts };
