@@ -543,4 +543,72 @@ onMounted(async () => {
 .preview-fade-enter-from { opacity: 0; transform: translateY(-8px); }
 .preview-fade-leave-active { transition: all 0.2s ease; }
 .preview-fade-leave-to { opacity: 0; transform: translateY(-4px); }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .header-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-search {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+    padding: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+  
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+}
 </style>

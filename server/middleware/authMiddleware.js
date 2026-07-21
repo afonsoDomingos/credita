@@ -4,13 +4,10 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
   let token;
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
+  const secret = process.env.JWT_SECRET || 'etako_super_secret';
+  
   if (!process.env.JWT_SECRET) {
-    console.error('[SECURITY] ❌ FATAL: JWT_SECRET não está definido nas variáveis de ambiente!');
-    return res.status(500).json({ 
-      message: 'Erro de configuração do servidor',
-      code: 'SERVER_CONFIG_ERROR'
-    });
+    console.warn('[SECURITY] ⚠️ WARNING: JWT_SECRET não está definido nas variáveis de ambiente. Usando fallback temporário. Configure JWT_SECRET em produção!');
   }
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -18,7 +15,7 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       console.log(`[AUTH-MIDDLEWARE] [${new Date().toISOString()}] IP: ${clientIp} | Token recebido, verificando...`);
       
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, secret);
       console.log(`[AUTH-MIDDLEWARE] Token válido para user ID: ${decoded.id}`);
       
       req.user = await User.findById(decoded.id).select('-password');

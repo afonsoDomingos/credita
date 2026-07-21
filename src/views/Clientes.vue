@@ -332,4 +332,54 @@ onMounted(() => {
 .btn-icon.text-blue:hover { background-color: #DBEAFE; }
 .btn-icon.text-red { color: #DC2626; }
 .btn-icon.text-red:hover { background-color: #FEE2E2; }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .header-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+    padding: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+}
 </style>

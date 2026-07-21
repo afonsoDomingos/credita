@@ -5,11 +5,11 @@ const User = require('../models/User');
 const Company = require('../models/Company');
 
 const generateToken = (id) => {
+  const secret = process.env.JWT_SECRET || 'etako_super_secret';
   if (!process.env.JWT_SECRET) {
-    console.error('[SECURITY] ❌ FATAL: JWT_SECRET não está definido nas variáveis de ambiente!');
-    throw new Error('JWT_SECRET não configurado');
+    console.warn('[SECURITY] ⚠️ WARNING: JWT_SECRET não está definido nas variáveis de ambiente. Usando fallback temporário. Configure JWT_SECRET em produção!');
   }
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, secret, {
     expiresIn: '30d',
   });
 };

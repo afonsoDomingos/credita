@@ -738,7 +738,7 @@ onUnmounted(() => {
   }
   
   .search-bar {
-    display: none; /* Hide search on mobile header to save space, could be an icon instead */
+    display: none; /* Hide search on mobile header to save space */
   }
   
   .user-info {
@@ -747,6 +747,20 @@ onUnmounted(() => {
   
   .profile-dropdown {
     right: 16px;
+  }
+  
+  .header-actions {
+    gap: 4px;
+  }
+  
+  .action-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .notifications-dropdown {
+    right: -16px;
+    width: 280px;
   }
 }
 </style>
