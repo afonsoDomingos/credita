@@ -75,7 +75,8 @@ import {
   Settings, 
   HelpCircle, 
   LogOut,
-  ClipboardList
+  ClipboardList,
+  Crown
 } from '@lucide/vue';
 
 const router = useRouter();
@@ -94,6 +95,7 @@ defineEmits(['toggle', 'close-mobile']);
 
 const menuItems = [
   { name: 'Dashboard', path: '/app', icon: LayoutDashboard },
+  { name: 'Assinatura', path: '/app/assinatura', icon: Crown },
   { name: 'Clientes', path: '/app/clientes', icon: Users },
   { name: 'Empréstimos', path: '/app/emprestimos', icon: Banknote },
   { name: 'Pagamentos', path: '/app/pagamentos', icon: CreditCard },
@@ -104,7 +106,6 @@ const menuItems = [
   { name: 'Notificações', path: '/app/notificacoes', icon: Bell },
   { name: 'Estatísticas', path: '/app/estatisticas', icon: BarChart3 },
   { name: 'Empresa', path: '/app/empresa', icon: Building },
-  { name: 'Assinatura', path: '/app/assinatura', icon: Briefcase },
 ];
 </script>
 

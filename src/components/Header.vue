@@ -109,6 +109,9 @@
           <router-link to="/app/perfil" class="dropdown-item" @click="showDropdown = false">
             <User :size="16" /> O meu Perfil
           </router-link>
+          <router-link to="/app/assinatura" class="dropdown-item" @click="showDropdown = false">
+            <CreditCard :size="16" /> Assinatura & Plano
+          </router-link>
           <div class="dropdown-divider"></div>
           <button @click="logout" class="dropdown-item text-red">
             <LogOut :size="16" /> Terminar Sessão
