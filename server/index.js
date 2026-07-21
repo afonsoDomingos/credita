@@ -16,7 +16,8 @@ if (!process.env.JWT_SECRET) {
 }
 // ─────────────────────────────────────────────────────────────────
 
-const { upload } = require('./config/cloudinary');
+// Temporarily disabled cloudinary to debug 500 error
+// const { upload } = require('./config/cloudinary');
 const Client = require('./models/Client');
 
 const app = express();
