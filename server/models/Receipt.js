@@ -13,7 +13,11 @@ const ReceiptSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
-    default: 150
+    default: 95
+  },
+  billingMonth: {
+    type: String, // Formato: 'YYYY-MM' ex: '2026-07'
+    default: null
   },
   status: {
     type: String,

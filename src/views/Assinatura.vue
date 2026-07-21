@@ -185,8 +185,9 @@
             <thead>
               <tr>
                 <th>Data de Envio</th>
-                <th>Valor Informado</th>
-                <th>Notas / Observações</th>
+                <th>Mês Pago</th>
+                <th>Valor</th>
+                <th>Notas</th>
                 <th>Estado</th>
                 <th class="text-right">Comprovativo</th>
               </tr>
@@ -196,6 +197,12 @@
                 <td class="td-date">
                   <Clock :size="12" />
                   {{ formatDate(rec.createdAt) }}
+                </td>
+                <td>
+                  <span v-if="rec.billingMonth" class="billing-month-badge">
+                    📅 {{ formatBillingMonth(rec.billingMonth) }}
+                  </span>
+                  <span v-else class="text-muted text-xs">—</span>
                 </td>
                 <td class="td-amount">
                   MT {{ formatMoney(rec.amount || monthlyPlanPrice) }}
@@ -255,6 +262,30 @@
             </div>
           </div>
 
+          <!-- Mês de Faturação -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-required">Mês a que se refere o pagamento *</span>
+            </label>
+            <div class="month-picker-wrapper">
+              <div class="month-picker-header">
+                <CalendarDays :size="15" class="month-icon" />
+                <span>Selecione o mês que está a pagar</span>
+              </div>
+              <input
+                type="month"
+                v-model="billingMonth"
+                required
+                class="month-input"
+                :min="minBillingMonth"
+                :max="maxBillingMonth"
+              />
+              <p class="month-hint">
+                💡 Este campo indica qual o mês de subscrição que está a liquidar (ex: se está a pagar Julho, o acesso será válido até final de Agosto).
+              </p>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Notas ou Observações (Opcional)</label>
             <textarea 
@@ -282,7 +313,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { 
   CheckCircle, Clock, AlertCircle, Star, CreditCard, UploadCloud, X, 
-  Smartphone, Building, Copy, MessageCircle, FileText
+  Smartphone, Building, Copy, MessageCircle, FileText, CalendarDays
 } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
@@ -307,8 +338,17 @@ const monthlyPlanPrice = ref('95');
 
 const receiptFile = ref(null);
 const notes = ref('');
+const billingMonth = ref(new Date().toISOString().slice(0, 7)); // 'YYYY-MM'
 const selectedPlanForModal = ref('mensal');
 const myReceipts = ref([]);
+
+// Helper: formatar 'YYYY-MM' para texto legível ex: 'Julho 2026'
+const formatBillingMonth = (ym) => {
+  if (!ym) return '—';
+  const [year, month] = ym.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+};
 
 const formatMoney = (val) => {
   return Number(val || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -338,8 +378,23 @@ const formatPlanName = (p) => {
 
 const openModalWithPlan = (selectedPlan) => {
   selectedPlanForModal.value = selectedPlan === 'trial' ? 'mensal' : selectedPlan;
+  // Reset billing month to current month each time modal is opened
+  billingMonth.value = new Date().toISOString().slice(0, 7);
   showModal.value = true;
 };
+
+// Limites do seletor de mês: 3 meses atrás até 2 meses à frente
+const minBillingMonth = computed(() => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 3);
+  return d.toISOString().slice(0, 7);
+});
+
+const maxBillingMonth = computed(() => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 2);
+  return d.toISOString().slice(0, 7);
+});
 
 const loadData = async () => {
   try {
@@ -423,6 +478,7 @@ const closeModal = () => {
   showModal.value = false;
   receiptFile.value = null;
   notes.value = '';
+  billingMonth.value = new Date().toISOString().slice(0, 7);
 };
 
 const onFileChange = (e) => {
@@ -441,6 +497,7 @@ const enviarComprovativo = async () => {
     formData.append('receipt', receiptFile.value);
     formData.append('notes', `[Plano Mensal - ${monthlyPlanPrice.value} MT] ${notes.value}`);
     formData.append('amount', monthlyPlanPrice.value);
+    formData.append('billingMonth', billingMonth.value);
     
     await api.post('/company/receipts', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -1185,5 +1242,82 @@ onMounted(() => {
   .single-plan-card { grid-template-columns: 1fr; gap: 16px; }
   .plan-card-right { justify-content: stretch; }
   .btn-select-plan { width: 100%; }
+}
+
+/* ── Month Picker ── */
+.label-required {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.month-picker-wrapper {
+  background: linear-gradient(135deg, #F0F9FF, #EFF6FF);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.month-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1E40AF;
+}
+
+.month-icon {
+  color: #2563EB;
+  flex-shrink: 0;
+}
+
+.month-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1E3A8A;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.month-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.month-hint {
+  font-size: 0.75rem;
+  color: #3B82F6;
+  margin: 0;
+  line-height: 1.4;
+  background: #EFF6FF;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 3px solid #3B82F6;
+}
+
+/* ── Billing Month Badge in history table ── */
+.billing-month-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 </style>

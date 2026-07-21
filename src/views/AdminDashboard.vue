@@ -200,6 +200,7 @@
             <tr>
               <th>Empresa</th>
               <th>Data</th>
+              <th>Mês Pago</th>
               <th>Valor / Plano</th>
               <th>Comprovativo</th>
               <th class="text-right">Ações</th>
@@ -209,6 +210,12 @@
             <tr v-for="receipt in receipts" :key="receipt._id" class="table-row">
               <td class="font-bold">{{ receipt.company?.name || 'N/A' }}</td>
               <td>{{ new Date(receipt.createdAt).toLocaleDateString() }}</td>
+              <td>
+                <span v-if="receipt.billingMonth" class="billing-month-pill">
+                  📅 {{ formatBillingMonth(receipt.billingMonth) }}
+                </span>
+                <span v-else class="text-muted">N/A</span>
+              </td>
               <td>{{ receipt.amount }} MT</td>
               <td>
                 <a :href="receipt.receiptUrl" target="_blank" class="text-blue flex items-center gap-1 hover:underline">
@@ -612,6 +619,14 @@ const onLogoError = (id) => {
 
 const financeData = ref(null);
 const loadingFinance = ref(false);
+
+// Helper: formatar 'YYYY-MM' para texto legível ex: 'julho de 2026'
+const formatBillingMonth = (ym) => {
+  if (!ym) return '—';
+  const [year, month] = ym.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+};
 
 // Charts
 const chartsData = ref(null);
@@ -1725,5 +1740,19 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   max-height: 280px;
+}
+
+.billing-month-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 </style>

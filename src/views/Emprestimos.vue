@@ -161,13 +161,16 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { Plus, X, FileText, Calculator } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
+import api from '../api';
+
+const route = useRoute();
 
 const formatMoney = (value) => {
   return Number(value || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
-import api from '../api';
 
 const emprestimos = ref([]);
 const clientes = ref([]);
@@ -265,8 +268,12 @@ const apagarEmprestimo = async (emp) => {
   }
 };
 
-onMounted(() => {
-  loadEmprestimos();
+onMounted(async () => {
+  await loadEmprestimos();
+  // Se vier do Dashboard com ?novo=1, abre o modal automaticamente
+  if (route.query.novo === '1') {
+    await openModal();
+  }
 });
 </script>
 

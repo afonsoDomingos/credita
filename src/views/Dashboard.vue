@@ -6,11 +6,11 @@
         <p class="text-muted text-sm">Resumo financeiro e operacional de hoje.</p>
       </div>
       <div class="header-actions">
-        <button class="btn-secondary flex items-center gap-2">
+        <button class="btn-secondary flex items-center gap-2" @click="exportarDados">
           <Download :size="16" />
           Exportar
         </button>
-        <button class="btn-primary flex items-center gap-2">
+        <button class="btn-primary flex items-center gap-2" @click="irParaNovoEmprestimo">
           <Plus :size="16" />
           Novo Empréstimo
         </button>
@@ -101,6 +101,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { 
   Users, Banknote, CreditCard, Wallet, 
   TrendingUp, TrendingDown, AlertCircle, 
@@ -110,6 +111,16 @@ import {
 import { Line, Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import api from '../api';
+
+const router = useRouter();
+
+const irParaNovoEmprestimo = () => {
+  router.push({ path: '/emprestimos', query: { novo: '1' } });
+};
+
+const exportarDados = () => {
+  router.push('/relatorios');
+};
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler);
