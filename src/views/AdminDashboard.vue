@@ -680,7 +680,9 @@ const systemForm = ref({
 const loadEmpresas = async () => {
   loading.value = true;
   try {
+    console.log('[ADMIN-DASHBOARD] Loading empresas and stats...');
     const { data } = await api.get('/dashboard/superadmin');
+    console.log('[ADMIN-DASHBOARD] Data received:', data);
     empresas.value = data.empresas;
     stats.value = data.stats;
     
@@ -691,8 +693,11 @@ const loadEmpresas = async () => {
     // Load inbox silently
     const inboxRes = await api.get('/support/admin/inbox');
     inbox.value = inboxRes.data;
+    
+    console.log('[ADMIN-DASHBOARD] All data loaded successfully');
   } catch (error) {
-    console.error('Error loading data', error);
+    console.error('[ADMIN-DASHBOARD-ERROR] Error loading data:', error);
+    toast.error('Erro ao carregar dados do painel de administração');
   } finally {
     loading.value = false;
   }
