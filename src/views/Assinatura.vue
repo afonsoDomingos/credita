@@ -76,47 +76,47 @@
         
         <div class="bank-accounts flex flex-col gap-4">
           <div class="account-tile hover-lift">
-            <div class="flex items-center justify-center mr-4">
-              <img src="/mpesa.svg" alt="M-Pesa" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1 border border-gray-100" />
+            <div class="account-icon mpesa-icon shadow-sm flex items-center justify-center mr-4">
+              <Smartphone :size="22" />
             </div>
-            <div class="account-details flex-1">
-              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa</span>
-              <span class="account-number text-lg font-black text-gray-800">{{ mpesaNumber }}</span>
+            <div class="account-details flex flex-col flex-1">
+              <span class="account-label text-xs font-bold text-gray-400 uppercase tracking-wider">M-Pesa</span>
+              <span class="account-number text-base font-black text-gray-800 tracking-wide mt-0.5">{{ mpesaNumber }}</span>
             </div>
             <button class="copy-btn" title="Copiar" @click="copyText(mpesaNumber)"><Copy :size="18"/></button>
           </div>
 
           <div class="account-tile hover-lift">
-            <div class="flex items-center justify-center mr-4">
-              <img src="/emola.svg" alt="e-Mola" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1 border border-gray-100" />
+            <div class="account-icon emola-icon shadow-sm flex items-center justify-center mr-4">
+              <Smartphone :size="22" />
             </div>
-            <div class="account-details flex-1">
-              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">e-Mola</span>
-              <span class="account-number text-lg font-black text-gray-800">{{ emolaNumber }}</span>
+            <div class="account-details flex flex-col flex-1">
+              <span class="account-label text-xs font-bold text-gray-400 uppercase tracking-wider">e-Mola</span>
+              <span class="account-number text-base font-black text-gray-800 tracking-wide mt-0.5">{{ emolaNumber }}</span>
             </div>
             <button class="copy-btn" title="Copiar" @click="copyText(emolaNumber)"><Copy :size="18"/></button>
           </div>
 
           <div class="account-tile hover-lift">
-            <div class="account-icon bank-icon shadow-sm">
-              <Building :size="20" />
+            <div class="account-icon bank-icon shadow-sm flex items-center justify-center mr-4">
+              <Building :size="22" />
             </div>
-            <div class="account-details flex-1">
-              <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">Conta Bancária (BIM)</span>
-              <span class="account-number text-lg font-black text-gray-800">{{ bankAccount }}</span>
+            <div class="account-details flex flex-col flex-1">
+              <span class="account-label text-xs font-bold text-gray-400 uppercase tracking-wider">Conta Bancária (BIM)</span>
+              <span class="account-number text-base font-black text-gray-800 tracking-wide mt-0.5">{{ bankAccount }}</span>
             </div>
             <button class="copy-btn" title="Copiar" @click="copyText(bankAccount)"><Copy :size="18"/></button>
           </div>
           
-          <div class="titular-box mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+          <div class="titular-box mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between flex-wrap gap-2">
             <span class="text-gray-500 text-sm font-medium">Titular da Conta:</span>
-            <span class="font-bold text-gray-800 text-sm bg-white py-1 px-3 rounded-lg shadow-sm">{{ accountHolder }}</span>
+            <span class="font-bold text-gray-800 text-sm bg-white py-1.5 px-3.5 rounded-lg shadow-xs border border-gray-100">{{ accountHolder }}</span>
           </div>
         </div>
         
-        <div class="support-banner mt-auto flex items-center justify-between p-4 rounded-xl bg-blue-50 border border-blue-100">
+        <div class="support-banner mt-6 flex items-center justify-between p-4 rounded-xl bg-blue-50 border border-blue-100">
           <div class="flex items-center gap-3">
-            <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+            <div class="bg-blue-100 p-2.5 rounded-full text-blue-600">
               <MessageCircle :size="20" />
             </div>
             <div>
@@ -136,7 +136,7 @@
       <div class="modal-content premium-modal shadow-2xl">
         <div class="modal-header flex justify-between items-center mb-6">
           <h2 class="font-bold text-xl text-gray-800">Enviar Comprovativo</h2>
-          <button class="btn-icon-close bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full p-2 transition-colors" @click="closeModal">
+          <button class="btn-icon-close" @click="closeModal">
             <X :size="20" />
           </button>
         </div>
@@ -144,24 +144,24 @@
         <form @submit.prevent="enviarComprovativo" class="modal-form">
           <div class="upload-area-wrapper mb-6 relative">
             <input type="file" required accept="image/*,.pdf" @change="onFileChange" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-            <div class="upload-dropzone border-2 border-dashed border-blue-300 bg-blue-50 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-blue-100">
-              <UploadCloud :size="40" class="text-blue-500 mb-3" />
-              <h4 class="font-bold text-blue-900 mb-1">Clique ou arraste o ficheiro</h4>
-              <p class="text-blue-600 text-xs font-medium">JPG, PNG ou PDF (Máx. 5MB)</p>
-              <div v-if="receiptFile" class="mt-4 px-4 py-2 bg-white rounded-lg shadow-sm text-sm font-bold text-gray-800 w-full truncate">
-                ✅ {{ receiptFile.name }}
+            <div class="upload-dropzone border-2 border-dashed border-blue-300 bg-blue-50/70 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all hover:bg-blue-100/70">
+              <UploadCloud :size="44" class="text-blue-600 mb-3" />
+              <h4 class="font-bold text-blue-950 text-base mb-1">Clique ou arraste o ficheiro</h4>
+              <p class="text-blue-700 text-xs font-medium">JPG, PNG ou PDF (Máx. 5MB)</p>
+              <div v-if="receiptFile" class="mt-4 px-4 py-2.5 bg-white rounded-xl shadow-sm text-xs font-bold text-emerald-700 border border-emerald-200 w-full truncate flex items-center justify-center gap-2">
+                <span>📄</span> <span>{{ receiptFile.name }}</span>
               </div>
             </div>
           </div>
           
           <div class="form-group mb-6">
-            <label class="font-bold text-gray-700 text-sm mb-2 block">Notas adicionais (Opcional)</label>
+            <label class="font-bold text-gray-700 text-xs uppercase tracking-wider mb-2 block">Notas adicionais (Opcional)</label>
             <textarea v-model="notes" rows="3" placeholder="Ex: Pagamento referente ao mês de Julho..." class="premium-textarea w-full"></textarea>
           </div>
 
           <div class="modal-actions flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <button type="button" class="btn-secondary-outline px-6 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors" @click="closeModal">Cancelar</button>
-            <button type="submit" class="btn-primary px-6 py-2.5 rounded-xl font-bold shadow-md hover:shadow-lg transition-all" :disabled="saving">
+            <button type="button" class="btn-secondary-outline" @click="closeModal">Cancelar</button>
+            <button type="submit" class="btn-confirm" :disabled="saving">
               {{ saving ? 'A Enviar...' : 'Confirmar Envio' }}
             </button>
           </div>
@@ -492,8 +492,9 @@ onMounted(() => {
   margin-right: 16px;
 }
 
-.mpesa-icon { background: #EF4444; color: white; }
-.bank-icon { background: #3B82F6; color: white; }
+.mpesa-icon { background: #E11D48; color: white; }
+.emola-icon { background: #7C3AED; color: white; }
+.bank-icon { background: #2563EB; color: white; }
 
 .copy-btn {
   background: white;
@@ -519,6 +520,7 @@ onMounted(() => {
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
+  text-decoration: none;
   transition: all 0.2s;
 }
 
@@ -527,23 +529,100 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-/* Modal */
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
 .premium-modal {
   background: white;
-  border-radius: 32px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.btn-icon-close {
+  background-color: #F1F5F9;
+  color: #64748B;
+  border-radius: 50%;
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-icon-close:hover {
+  background-color: #E2E8F0;
+  color: #0F172A;
 }
 
 .premium-textarea {
-  padding: 16px;
-  border: 2px solid #E2E8F0;
-  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
   font-family: inherit;
+  font-size: 0.875rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .premium-textarea:focus {
   border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+}
+.btn-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+.btn-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary-outline {
+  background: white;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-secondary-outline:hover {
+  background: #F8FAFC;
+  color: #0F172A;
 }
 
 @media (max-width: 1024px) {
