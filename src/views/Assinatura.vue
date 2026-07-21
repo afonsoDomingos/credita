@@ -153,7 +153,7 @@
                 <span v-if="plan === 'mensal'" class="badge-current">Plano Atual</span>
               </div>
               <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 1.500</span>
+                <span class="text-3xl font-black text-slate-900">MT 150</span>
                 <span class="text-xs text-muted"> / mês</span>
               </div>
               <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
@@ -170,19 +170,19 @@
 
           <!-- Plano Trimestral -->
           <div class="surface plan-card rounded-2xl border p-6 flex flex-col justify-between transition-all relative overflow-hidden" :class="plan === 'trimestral' ? 'plan-active-border' : ''">
-            <div class="plan-ribbon bg-amber-500 text-white">Desconto MT 500</div>
+            <div class="plan-ribbon bg-amber-500 text-white">Desconto MT 50</div>
             <div>
               <div class="flex justify-between items-center mb-3">
                 <span class="plan-tag bg-amber-50 text-amber-700">Trimestral</span>
                 <span v-if="plan === 'trimestral'" class="badge-current">Plano Atual</span>
               </div>
               <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 4.000</span>
+                <span class="text-3xl font-black text-slate-900">MT 400</span>
                 <span class="text-xs text-muted"> / 3 meses</span>
               </div>
               <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
                 <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Todas as funcionalidades do Mensal</li>
-                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Economize MT 500 no período</li>
+                <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Economize MT 50 no período</li>
                 <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Suporte prioritário</li>
                 <li class="flex items-center gap-2"><CheckCircle :size="14" class="text-emerald-500" /> Log de Atividades & Auditoria</li>
               </ul>
@@ -201,7 +201,7 @@
                 <span v-if="plan === 'anual'" class="badge-current">Plano Atual</span>
               </div>
               <div class="price-box mb-4">
-                <span class="text-3xl font-black text-slate-900">MT 15.000</span>
+                <span class="text-3xl font-black text-slate-900">MT 1.500</span>
                 <span class="text-xs text-muted"> / ano</span>
               </div>
               <ul class="plan-features space-y-2 text-xs text-slate-600 mb-6">
@@ -244,7 +244,7 @@
                   {{ new Date(rec.createdAt).toLocaleDateString('pt-PT') }} às {{ new Date(rec.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) }}
                 </td>
                 <td class="font-bold text-slate-800 text-xs">
-                  MT {{ rec.amount?.toLocaleString() || '1.500' }}
+                  MT {{ rec.amount?.toLocaleString() || '150' }}
                 </td>
                 <td class="text-xs text-muted max-w-xs truncate">
                   {{ rec.notes || 'Sem observações' }}
@@ -287,9 +287,9 @@
           <div class="form-group mb-4">
             <label class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1 block">Plano Desejado</label>
             <select v-model="selectedPlanForModal" class="premium-select w-full">
-              <option value="mensal">Plano Mensal - MT 1.500 / mês</option>
-              <option value="trimestral">Plano Trimestral - MT 4.000 / 3 meses</option>
-              <option value="anual">Plano Anual - MT 15.000 / ano</option>
+              <option value="mensal">Plano Mensal - MT 150 / mês</option>
+              <option value="trimestral">Plano Trimestral - MT 400 / 3 meses</option>
+              <option value="anual">Plano Anual - MT 1.500 / ano</option>
             </select>
           </div>
 
