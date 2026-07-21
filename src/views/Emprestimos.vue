@@ -11,13 +11,26 @@
       </button>
     </div>
 
+    <!-- Filtros -->
+    <div class="surface p-4 mb-4 flex items-center gap-4 flex-wrap no-print">
+      <div class="filter-search flex-1">
+        <input type="text" v-model="filtroTexto" placeholder="Filtrar por nome do cliente..." class="filter-input" />
+      </div>
+      <select v-model="filtroEstado" class="filter-select">
+        <option value="">Todos os estados</option>
+        <option value="active">Ativos</option>
+        <option value="paid">Pagos</option>
+        <option value="defaulted">Em Dívida</option>
+      </select>
+    </div>
+
     <!-- Tabela de Empréstimos -->
     <div class="surface p-0 overflow-hidden">
       <div v-if="loading" class="loader-wrapper">
         <Spinner message="A carregar empréstimos..." />
       </div>
       
-      <table v-else-if="emprestimos.length > 0" class="data-table">
+      <table v-else-if="emprestimosFiltrados.length > 0" class="data-table">
         <thead>
           <tr>
             <th>Cliente</th>
@@ -29,7 +42,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="emp in emprestimos" :key="emp._id">
+          <tr v-for="emp in emprestimosFiltrados" :key="emp._id">
             <td class="font-medium">{{ emp.client ? emp.client.name : 'Desconhecido' }}</td>
             <td class="font-bold">MT {{ emp.amount.toLocaleString() }}</td>
             <td>{{ emp.interestRate }}%</td>
@@ -143,6 +156,18 @@ const loading = ref(true);
 const showModal = ref(false);
 const saving = ref(false);
 const errorMsg = ref('');
+
+const filtroTexto = ref('');
+const filtroEstado = ref('');
+
+const emprestimosFiltrados = computed(() => {
+  return emprestimos.value.filter(emp => {
+    const matchTexto = !filtroTexto.value || 
+      (emp.client?.name || '').toLowerCase().includes(filtroTexto.value.toLowerCase());
+    const matchEstado = !filtroEstado.value || emp.status === filtroEstado.value;
+    return matchTexto && matchEstado;
+  });
+});
 
 const form = ref({
   client: '',
@@ -264,6 +289,31 @@ onMounted(() => {
 .loader-wrapper {
   padding: 60px 0;
 }
+
+.filter-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  outline: none;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+.filter-input:focus { border-color: var(--primary-color); }
+
+.filter-select {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  outline: none;
+  font-size: 0.875rem;
+  background-color: white;
+  min-width: 180px;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: var(--primary-color); }
 
 /* Modal Styles */
 .modal-overlay {

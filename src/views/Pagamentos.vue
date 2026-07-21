@@ -11,11 +11,24 @@
       </button>
     </div>
 
+    <!-- Filtro -->
+    <div class="surface p-4 mb-4 flex items-center gap-4 flex-wrap no-print">
+      <div class="filter-search flex-1">
+        <input type="text" v-model="filtroPag" placeholder="Filtrar por nome do cliente..." class="filter-input" />
+      </div>
+      <select v-model="filtroMetodo" class="filter-select">
+        <option value="">Todos os métodos</option>
+        <option value="cash">Numerário</option>
+        <option value="transfer">Transferência</option>
+        <option value="card">Cartão</option>
+      </select>
+    </div>
+
     <!-- Tabela de Pagamentos -->
     <div class="surface p-0 overflow-hidden">
       <div v-if="loading" class="p-6 text-center text-muted">A carregar pagamentos...</div>
       
-      <table v-else-if="pagamentos.length > 0" class="data-table">
+      <table v-else-if="pagamentosFiltrados.length > 0" class="data-table">
         <thead>
           <tr>
             <th>Data</th>
@@ -27,7 +40,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="pagamento in pagamentos" :key="pagamento._id">
+          <tr v-for="pagamento in pagamentosFiltrados" :key="pagamento._id">
             <td>{{ new Date(pagamento.paymentDate).toLocaleDateString('pt-PT') }}</td>
             <td class="font-medium">{{ pagamento.loan && pagamento.loan.client ? pagamento.loan.client.name : 'N/A' }}</td>
             <td>Empréstimo (MT {{ pagamento.loan ? pagamento.loan.amount.toLocaleString() : '?' }})</td>
@@ -115,6 +128,18 @@ const loading = ref(true);
 const showModal = ref(false);
 const saving = ref(false);
 const errorMsg = ref('');
+
+const filtroPag = ref('');
+const filtroMetodo = ref('');
+
+const pagamentosFiltrados = computed(() => {
+  return pagamentos.value.filter(p => {
+    const matchTexto = !filtroPag.value ||
+      (p.loan?.client?.name || '').toLowerCase().includes(filtroPag.value.toLowerCase());
+    const matchMetodo = !filtroMetodo.value || p.paymentMethod === filtroMetodo.value;
+    return matchTexto && matchMetodo;
+  });
+});
 
 const form = ref({
   loanId: '',

@@ -5,9 +5,40 @@
         <Menu :size="24" />
       </button>
       
-      <div class="search-bar">
+      <div class="search-bar" ref="searchRef">
         <Search :size="18" class="search-icon" />
-        <input type="text" placeholder="Pesquisar..." class="search-input" />
+        <input type="text" placeholder="Pesquisar clientes, empréstimos..." class="search-input" v-model="searchQuery" @input="onSearch" @focus="showSearchResults = searchQuery.length >= 2" />
+        <kbd v-if="!searchQuery" class="search-kbd">Ctrl+K</kbd>
+        <button v-if="searchQuery" class="search-clear" @click="clearSearch">
+          <X :size="14" />
+        </button>
+        
+        <!-- Search Results Dropdown -->
+        <div class="search-dropdown" v-if="showSearchResults && searchResults.length > 0">
+          <div v-if="searchResults.filter(r => r.type === 'client').length > 0" class="search-group">
+            <span class="search-group-title">Clientes</span>
+            <div v-for="result in searchResults.filter(r => r.type === 'client')" :key="result._id" class="search-result-item" @click="goToResult(result)">
+              <div class="result-avatar">{{ result.name.charAt(0) }}</div>
+              <div class="result-info">
+                <span class="result-name">{{ result.name }}</span>
+                <span class="result-meta">{{ result.phone || result.idCard }}</span>
+              </div>
+            </div>
+          </div>
+          <div v-if="searchResults.filter(r => r.type === 'loan').length > 0" class="search-group">
+            <span class="search-group-title">Empréstimos</span>
+            <div v-for="result in searchResults.filter(r => r.type === 'loan')" :key="result._id" class="search-result-item" @click="goToResult(result)">
+              <div class="result-avatar bg-blue">MT</div>
+              <div class="result-info">
+                <span class="result-name">{{ result.clientName }} — MT {{ result.amount?.toLocaleString() }}</span>
+                <span class="result-meta">{{ result.status === 'active' ? 'Ativo' : result.status === 'paid' ? 'Pago' : 'Em Dívida' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="search-dropdown" v-if="showSearchResults && searchQuery.length >= 2 && searchResults.length === 0 && !searching">
+          <div class="search-empty">Nenhum resultado para "{{ searchQuery }}"</div>
+        </div>
       </div>
     </div>
     
@@ -91,7 +122,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Menu, Search, Bell, MessageSquare, ChevronDown, User, LogOut, CreditCard, AlertCircle, Info } from '@lucide/vue';
+import { Menu, Search, Bell, MessageSquare, ChevronDown, User, LogOut, CreditCard, AlertCircle, Info, X } from '@lucide/vue';
 import api from '../api';
 
 defineEmits(['toggle-mobile-sidebar']);
@@ -105,6 +136,14 @@ const profileRef = ref(null);
 const notifications = ref([]);
 const showNotifications = ref(false);
 const notificationRef = ref(null);
+
+// Global Search
+const searchQuery = ref('');
+const searchResults = ref([]);
+const showSearchResults = ref(false);
+const searching = ref(false);
+const searchRef = ref(null);
+let searchTimeout = null;
 
 const unreadCount = computed(() => {
   return notifications.value.filter(n => !n.isRead).length;
@@ -133,6 +172,64 @@ const closeDropdowns = (e) => {
   }
   if (notificationRef.value && !notificationRef.value.contains(e.target)) {
     showNotifications.value = false;
+  }
+  if (searchRef.value && !searchRef.value.contains(e.target)) {
+    showSearchResults.value = false;
+  }
+};
+
+const onSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  if (searchQuery.value.length < 2) {
+    searchResults.value = [];
+    showSearchResults.value = false;
+    return;
+  }
+  searching.value = true;
+  searchTimeout = setTimeout(async () => {
+    try {
+      const results = [];
+      
+      // Search clients
+      const { data: clients } = await api.get('/clients');
+      const matchedClients = clients.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (c.phone && c.phone.includes(searchQuery.value)) ||
+        (c.idCard && c.idCard.toLowerCase().includes(searchQuery.value.toLowerCase()))
+      ).slice(0, 4);
+      matchedClients.forEach(c => results.push({ ...c, type: 'client' }));
+      
+      // Search loans
+      const { data: loans } = await api.get('/loans');
+      const matchedLoans = loans.filter(l =>
+        (l.client?.name && l.client.name.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+        l.amount.toString().includes(searchQuery.value)
+      ).slice(0, 4);
+      matchedLoans.forEach(l => results.push({ ...l, type: 'loan', clientName: l.client?.name || 'Desconhecido' }));
+      
+      searchResults.value = results;
+      showSearchResults.value = true;
+    } catch (error) {
+      console.error('Erro na pesquisa', error);
+    } finally {
+      searching.value = false;
+    }
+  }, 300); // 300ms debounce
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  searchResults.value = [];
+  showSearchResults.value = false;
+};
+
+const goToResult = (result) => {
+  showSearchResults.value = false;
+  searchQuery.value = '';
+  if (result.type === 'client') {
+    router.push('/app/clientes');
+  } else if (result.type === 'loan') {
+    router.push(`/app/emprestimos/${result._id}`);
   }
 };
 
@@ -243,6 +340,114 @@ onUnmounted(() => {
   outline: none;
   font-family: inherit;
   color: var(--text-main);
+}
+
+.search-bar {
+  position: relative;
+}
+
+.search-kbd {
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-family: inherit;
+  border: 1px solid rgba(0,0,0,0.06);
+  white-space: nowrap;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.search-clear:hover { color: var(--text-main); }
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.search-group {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.search-group:last-child { border-bottom: none; }
+
+.search-group-title {
+  display: block;
+  padding: 4px 16px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.search-result-item:hover { background-color: #F3F4F6; }
+
+.result-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #EFF6FF;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.result-avatar.bg-blue { background-color: #DBEAFE; color: #1D4ED8; }
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.result-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.search-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 .header-right {
