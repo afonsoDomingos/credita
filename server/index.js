@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const { upload } = require('./config/cloudinary');
 const Client = require('./models/Client');
 
@@ -9,6 +10,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Servir ficheiros carregados localmente de forma estática
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Custom Request Logger for Production Debugging
 app.use((req, res, next) => {

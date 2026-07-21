@@ -1,6 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'SEU_CLOUD_NAME';
@@ -24,17 +26,42 @@ if (isCloudinaryConfigured) {
     }
   });
 } else {
-  // Fallback to prevent crashes if Cloudinary is not configured
+  // Garantir que a pasta local 'uploads' existe
+  const uploadDir = path.join(__dirname, '../uploads');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  // Fallback para armazenamento em disco local
   storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, require('os').tmpdir())
+      cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now())
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
   });
 }
 
-const upload = multer({ storage: storage });
+const multerUpload = multer({ storage: storage });
 
-module.exports = { cloudinary, upload };
+// Wrapper para interceptar o upload e gerar o link web acessível quando for local
+const customUpload = {
+  single: (fieldName) => {
+    const originalMiddleware = multerUpload.single(fieldName);
+    return (req, res, next) => {
+      originalMiddleware(req, res, (err) => {
+        if (err) return next(err);
+        if (req.file && !isCloudinaryConfigured) {
+          // Construir a URL pública para o ficheiro local
+          const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+          req.file.path = `${baseUrl}/uploads/${req.file.filename}`;
+        }
+        next();
+      });
+    };
+  }
+};
+
+module.exports = { cloudinary, upload: customUpload };
