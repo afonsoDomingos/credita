@@ -6,6 +6,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'SEU_CLOUD_NAME';
+const isServerless = !!(process.env.VERCEL || process.env.NODE_ENV === 'production');
 
 if (isCloudinaryConfigured) {
   cloudinary.config({
@@ -26,10 +27,18 @@ if (isCloudinaryConfigured) {
     }
   });
 } else {
-  // Garantir que a pasta local 'uploads' existe
-  const uploadDir = path.join(__dirname, '../uploads');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  // No Vercel, a pasta temporária '/tmp' é a única com permissão de escrita
+  const uploadDir = isServerless
+    ? '/tmp/uploads'
+    : path.join(__dirname, '../uploads');
+
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      console.log(`📁 Pasta de uploads configurada com sucesso em: ${uploadDir}`);
+    }
+  } catch (err) {
+    console.warn(`⚠️ Não foi possível criar a pasta local de uploads em '${uploadDir}':`, err.message);
   }
 
   // Fallback para armazenamento em disco local
@@ -69,7 +78,9 @@ const customUpload = {
         if (req.file && !isCloudinaryConfigured) {
           // Construir a URL pública para o ficheiro local
           const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
-          req.file.path = `${baseUrl}/uploads/${req.file.filename}`;
+          req.file.path = isServerless
+            ? `${baseUrl}/api/temp-uploads/${req.file.filename}`
+            : `${baseUrl}/uploads/${req.file.filename}`;
         }
         next();
       });
@@ -78,3 +89,4 @@ const customUpload = {
 };
 
 module.exports = { cloudinary, upload: customUpload };
+
