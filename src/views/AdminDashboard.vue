@@ -1763,27 +1763,27 @@ onMounted(() => {
    ANALYTICS SECTION — Premium Styles
 ═══════════════════════════════════════════ */
 .analytics-section {
-  padding-bottom: 40px;
+  padding-bottom: 20px;
 }
 
 .analytics-page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 28px;
+  align-items: center;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 .analytics-title {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #0F172A;
-  margin: 0 0 4px 0;
+  margin: 0;
 }
 
 .analytics-subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #64748B;
   margin: 0;
 }
@@ -1791,18 +1791,18 @@ onMounted(() => {
 .analytics-period-badge {
   background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
   color: #2563EB;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 12px;
   border: 1px solid #BFDBFE;
   white-space: nowrap;
 }
 
 .analytics-loading {
   background: white;
-  border-radius: 20px;
-  padding: 64px;
+  border-radius: 12px;
+  padding: 32px;
   text-align: center;
   border: 1px solid #E2E8F0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
@@ -1811,19 +1811,19 @@ onMounted(() => {
 .analytics-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 /* ─── KPI Cards ─── */
 .analytics-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .kpi-card {
-  border-radius: 20px;
-  padding: 22px 24px;
+  border-radius: 12px;
+  padding: 16px;
   border: 1px solid transparent;
   position: relative;
   overflow: hidden;
@@ -1831,17 +1831,17 @@ onMounted(() => {
 }
 
 .kpi-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 .kpi-card::before {
   content: '';
   position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 100px;
-  height: 100px;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   opacity: 0.08;
 }
@@ -1859,13 +1859,13 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .kpi-icon-wrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1877,28 +1877,28 @@ onMounted(() => {
 .kpi-icon-amber { background: rgba(245,158,11,0.12); color: #D97706; }
 
 .kpi-trend {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 3px 8px;
-  border-radius: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
 .kpi-trend-up { background: rgba(16,185,129,0.12); color: #059669; }
 .kpi-trend-neutral { background: rgba(99,102,241,0.12); color: #6366F1; }
 
 .kpi-value {
-  font-size: 1.75rem;
-  font-weight: 900;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: #0F172A;
   line-height: 1;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   letter-spacing: -0.5px;
 }
 
 .kpi-label {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #64748B;
   margin: 0;
@@ -1908,40 +1908,40 @@ onMounted(() => {
 .analytics-section-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.8rem;
+  gap: 8px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #64748B;
-  margin-bottom: -8px;
+  margin-bottom: 12px;
 }
 
 .section-label-dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
 /* ─── Chart Panels ─── */
 .charts-grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
 }
 
 .chart-panel {
   background: white;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s ease;
 }
 
 .chart-panel:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .chart-panel-header {
