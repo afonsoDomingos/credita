@@ -28,7 +28,10 @@ if (!cached) {
 async function connectDB() {
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGO_URI).then(mongoose => mongoose);
+    cached.promise = mongoose.connect(process.env.MONGO_URI, {
+      family: 4,
+      serverSelectionTimeoutMS: 5000
+    }).then(mongoose => mongoose);
   }
   cached.conn = await cached.promise;
   console.log('✅ MongoDB Connected (Serverless)');
@@ -42,7 +45,11 @@ app.use(async (req, res, next) => {
     next();
   } catch (error) {
     console.error('❌ MongoDB Connection Error:', error);
-    res.status(500).json({ error: 'Database connection failed' });
+    res.status(503).json({ 
+      error: 'Falha na ligação à Base de Dados', 
+      details: error.message,
+      hint: 'Verifique se o cluster no MongoDB Atlas está ativo/unpaused ou se as credenciais estão corretas.'
+    });
   }
 });
 
