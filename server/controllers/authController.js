@@ -44,7 +44,7 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error('[AUTH] Erro interno durante o login:', error);
-    res.status(500).json({ message: 'Erro no servidor' });
+    res.status(500).json({ message: 'Erro no servidor', error: error.message, stack: error.stack });
   }
 };
 
