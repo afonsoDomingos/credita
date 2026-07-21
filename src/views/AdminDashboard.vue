@@ -11,6 +11,7 @@
     <!-- Tabs -->
     <div class="tabs flex gap-6 mb-6 border-b">
       <button class="tab-btn" :class="{ active: activeTab === 'empresas' }" @click="activeTab = 'empresas'">Empresas Registadas</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'analytics' }" @click="loadCharts(); activeTab = 'analytics'">📊 Analytics</button>
       <button class="tab-btn" :class="{ active: activeTab === 'faturacao' }" @click="loadFinance(); activeTab = 'faturacao'">Faturação / Receitas</button>
       <button class="tab-btn" :class="{ active: activeTab === 'comprovativos' }" @click="activeTab = 'comprovativos'">
         Comprovativos
@@ -294,7 +295,154 @@
       </div>
     </div>
 
-    <!-- Modal Nova Empresa -->
+    <!-- Analytics / Charts Tab -->
+    <div v-if="activeTab === 'analytics'" class="analytics-section">
+
+      <!-- Page Header -->
+      <div class="analytics-page-header">
+        <div>
+          <h2 class="analytics-title">📊 Analytics & Métricas</h2>
+          <p class="analytics-subtitle">Visão geral do desempenho da plataforma em tempo real</p>
+        </div>
+        <div class="analytics-period-badge">
+          Últimos 6 meses
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loadingCharts" class="analytics-loading">
+        <Spinner message="A calcular métricas da plataforma..." />
+      </div>
+
+      <div v-else-if="chartsData" class="analytics-content">
+
+        <!-- ── KPI Cards ── -->
+        <div class="analytics-kpi-grid">
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-top">
+              <div class="kpi-icon-wrap kpi-icon-blue"><BarChart2 :size="22" /></div>
+              <span class="kpi-trend kpi-trend-up">↑ receita</span>
+            </div>
+            <p class="kpi-value">MT {{ chartsData.monthlyRevenue.reduce((a,b) => a+b, 0).toLocaleString() }}</p>
+            <p class="kpi-label">Receita Total Acumulada</p>
+          </div>
+
+          <div class="kpi-card kpi-emerald">
+            <div class="kpi-top">
+              <div class="kpi-icon-wrap kpi-icon-emerald"><TrendingUp :size="22" /></div>
+              <span class="kpi-trend kpi-trend-up">este mês</span>
+            </div>
+            <p class="kpi-value">MT {{ (chartsData.monthlyRevenue[chartsData.monthlyRevenue.length - 1] || 0).toLocaleString() }}</p>
+            <p class="kpi-label">Faturado Este Mês</p>
+          </div>
+
+          <div class="kpi-card kpi-purple">
+            <div class="kpi-top">
+              <div class="kpi-icon-wrap kpi-icon-purple"><Building2 :size="22" /></div>
+              <span class="kpi-trend kpi-trend-neutral">ativas</span>
+            </div>
+            <p class="kpi-value">{{ chartsData.statusCounts[0] }}</p>
+            <p class="kpi-label">Empresas Ativas</p>
+          </div>
+
+          <div class="kpi-card kpi-amber">
+            <div class="kpi-top">
+              <div class="kpi-icon-wrap kpi-icon-amber"><Users :size="22" /></div>
+              <span class="kpi-trend kpi-trend-up">este mês</span>
+            </div>
+            <p class="kpi-value">{{ chartsData.newCompanies[chartsData.newCompanies.length - 1] || 0 }}</p>
+            <p class="kpi-label">Novas Empresas</p>
+          </div>
+        </div>
+
+        <!-- ── Section Label ── -->
+        <div class="analytics-section-label">
+          <span class="section-label-dot bg-blue-500"></span>
+          Evolução Temporal
+        </div>
+
+        <!-- ── Charts Row 1: Bar + Line ── -->
+        <div class="charts-grid-2">
+          <div class="chart-panel">
+            <div class="chart-panel-header">
+              <div class="chart-panel-title-group">
+                <div class="chart-panel-icon chart-panel-icon-blue">
+                  <BarChart2 :size="16" />
+                </div>
+                <div>
+                  <h3 class="chart-panel-title">Receita Mensal</h3>
+                  <p class="chart-panel-sub">Aprovações por mês em MT</p>
+                </div>
+              </div>
+            </div>
+            <div class="chart-canvas-area">
+              <canvas ref="revenueChart" height="180"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-panel-header">
+              <div class="chart-panel-title-group">
+                <div class="chart-panel-icon chart-panel-icon-emerald">
+                  <TrendingUp :size="16" />
+                </div>
+                <div>
+                  <h3 class="chart-panel-title">Crescimento da Plataforma</h3>
+                  <p class="chart-panel-sub">Novas empresas registadas</p>
+                </div>
+              </div>
+            </div>
+            <div class="chart-canvas-area">
+              <canvas ref="growthChart" height="180"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section Label ── -->
+        <div class="analytics-section-label">
+          <span class="section-label-dot bg-purple-500"></span>
+          Distribuição & Composição
+        </div>
+
+        <!-- ── Charts Row 2: Donut + Donut ── -->
+        <div class="charts-grid-2">
+          <div class="chart-panel">
+            <div class="chart-panel-header">
+              <div class="chart-panel-title-group">
+                <div class="chart-panel-icon chart-panel-icon-purple">
+                  <Activity :size="16" />
+                </div>
+                <div>
+                  <h3 class="chart-panel-title">Planos de Subscrição</h3>
+                  <p class="chart-panel-sub">Distribuição por tipo de plano</p>
+                </div>
+              </div>
+            </div>
+            <div class="donut-canvas-area">
+              <canvas ref="plansChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-panel-header">
+              <div class="chart-panel-title-group">
+                <div class="chart-panel-icon chart-panel-icon-emerald">
+                  <Building2 :size="16" />
+                </div>
+                <div>
+                  <h3 class="chart-panel-title">Estado das Empresas</h3>
+                  <p class="chart-panel-sub">Ativas vs. Suspensas</p>
+                </div>
+              </div>
+            </div>
+            <div class="donut-canvas-area">
+              <canvas ref="statusChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content surface">
         <div class="modal-header flex justify-between items-center mb-4">
@@ -437,10 +585,12 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send, Eye, DollarSign, TrendingUp } from '@lucide/vue';
+import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send, Eye, DollarSign, TrendingUp, BarChart2 } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
 import api from '../api';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 
 const toast = useToast();
 const empresas = ref([]);
@@ -453,6 +603,18 @@ const onLogoError = (id) => {
 
 const financeData = ref(null);
 const loadingFinance = ref(false);
+
+// Charts
+const chartsData = ref(null);
+const loadingCharts = ref(false);
+const revenueChart = ref(null);
+const growthChart = ref(null);
+const plansChart = ref(null);
+const statusChart = ref(null);
+let revenueChartInstance = null;
+let growthChartInstance = null;
+let plansChartInstance = null;
+let statusChartInstance = null;
 
 const inbox = ref([]);
 const adminMessages = ref([]);
@@ -519,6 +681,151 @@ const loadFinance = async () => {
     toast.error('Erro ao carregar dados financeiros');
   } finally {
     loadingFinance.value = false;
+  }
+};
+
+const loadCharts = async () => {
+  if (chartsData.value) {
+    // Already loaded, just re-render
+    await nextTick();
+    renderCharts();
+    return;
+  }
+  loadingCharts.value = true;
+  try {
+    const { data } = await api.get('/admin/charts');
+    chartsData.value = data;
+    await nextTick();
+    renderCharts();
+  } catch (error) {
+    toast.error('Erro ao carregar dados dos gráficos');
+  } finally {
+    loadingCharts.value = false;
+  }
+};
+
+const renderCharts = () => {
+  const d = chartsData.value;
+  if (!d) return;
+
+  const commonGridColor = 'rgba(148,163,184,0.12)';
+  const commonTickColor = '#94a3b8';
+  const fontFamily = "'Inter', 'system-ui', sans-serif";
+
+  // --- Revenue Bar Chart ---
+  if (revenueChartInstance) revenueChartInstance.destroy();
+  if (revenueChart.value) {
+    revenueChartInstance = new Chart(revenueChart.value, {
+      type: 'bar',
+      data: {
+        labels: d.monthLabels,
+        datasets: [{
+          label: 'Receita (MT)',
+          data: d.monthlyRevenue,
+          backgroundColor: 'rgba(37,99,235,0.15)',
+          borderColor: '#2563EB',
+          borderWidth: 2,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: { label: ctx => `MT ${ctx.raw.toLocaleString()}` }
+          }
+        },
+        scales: {
+          x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { family: fontFamily } } },
+          y: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { family: fontFamily }, callback: v => `MT ${v}` }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // --- Growth Line Chart ---
+  if (growthChartInstance) growthChartInstance.destroy();
+  if (growthChart.value) {
+    growthChartInstance = new Chart(growthChart.value, {
+      type: 'line',
+      data: {
+        labels: d.monthLabels,
+        datasets: [{
+          label: 'Novas Empresas',
+          data: d.newCompanies,
+          borderColor: '#10B981',
+          backgroundColor: 'rgba(16,185,129,0.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#10B981',
+          pointRadius: 5,
+          tension: 0.4,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { family: fontFamily } } },
+          y: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { family: fontFamily }, stepSize: 1 }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // --- Plans Doughnut Chart ---
+  if (plansChartInstance) plansChartInstance.destroy();
+  if (plansChart.value) {
+    const planColors = ['#2563EB', '#F59E0B', '#10B981', '#7C3AED', '#EF4444'];
+    plansChartInstance = new Chart(plansChart.value, {
+      type: 'doughnut',
+      data: {
+        labels: d.planLabels.length ? d.planLabels : ['Sem dados'],
+        datasets: [{
+          data: d.planCounts.length ? d.planCounts : [1],
+          backgroundColor: planColors.slice(0, d.planLabels.length || 1),
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#475569', font: { family: fontFamily }, padding: 16 } }
+        }
+      }
+    });
+  }
+
+  // --- Status Doughnut Chart ---
+  if (statusChartInstance) statusChartInstance.destroy();
+  if (statusChart.value) {
+    statusChartInstance = new Chart(statusChart.value, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ativas', 'Suspensas'],
+        datasets: [{
+          data: d.statusCounts,
+          backgroundColor: ['#10B981', '#EF4444'],
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#475569', font: { family: fontFamily }, padding: 16 } }
+        }
+      }
+    });
   }
 };
 
@@ -1165,5 +1472,246 @@ onMounted(() => {
   .message-wrapper {
     max-width: 90%;
   }
+  .analytics-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .charts-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ANALYTICS SECTION — Premium Styles
+═══════════════════════════════════════════ */
+.analytics-section {
+  padding-bottom: 40px;
+}
+
+.analytics-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.analytics-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 4px 0;
+}
+
+.analytics-subtitle {
+  font-size: 0.875rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.analytics-period-badge {
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  color: #2563EB;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid #BFDBFE;
+  white-space: nowrap;
+}
+
+.analytics-loading {
+  background: white;
+  border-radius: 20px;
+  padding: 64px;
+  text-align: center;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── KPI Cards ─── */
+.analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.kpi-card {
+  border-radius: 20px;
+  padding: 22px 24px;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: 0.08;
+}
+
+.kpi-blue { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-color: #BFDBFE; }
+.kpi-blue::before { background: #2563EB; }
+.kpi-emerald { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-color: #BBF7D0; }
+.kpi-emerald::before { background: #10B981; }
+.kpi-purple { background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%); border-color: #DDD6FE; }
+.kpi-purple::before { background: #7C3AED; }
+.kpi-amber { background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border-color: #FDE68A; }
+.kpi-amber::before { background: #F59E0B; }
+
+.kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.kpi-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-icon-blue { background: rgba(37,99,235,0.12); color: #2563EB; }
+.kpi-icon-emerald { background: rgba(16,185,129,0.12); color: #059669; }
+.kpi-icon-purple { background: rgba(124,58,237,0.12); color: #7C3AED; }
+.kpi-icon-amber { background: rgba(245,158,11,0.12); color: #D97706; }
+
+.kpi-trend {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.kpi-trend-up { background: rgba(16,185,129,0.12); color: #059669; }
+.kpi-trend-neutral { background: rgba(99,102,241,0.12); color: #6366F1; }
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #0F172A;
+  line-height: 1;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748B;
+  margin: 0;
+}
+
+/* ─── Section Labels ─── */
+.analytics-section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #64748B;
+  margin-bottom: -8px;
+}
+
+.section-label-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ─── Chart Panels ─── */
+.charts-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chart-panel {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-panel:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.chart-panel-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.chart-panel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.chart-panel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chart-panel-icon-blue { background: #EFF6FF; color: #2563EB; }
+.chart-panel-icon-emerald { background: #F0FDF4; color: #059669; }
+.chart-panel-icon-purple { background: #F5F3FF; color: #7C3AED; }
+
+.chart-panel-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 2px 0;
+}
+
+.chart-panel-sub {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  margin: 0;
+}
+
+.chart-canvas-area {
+  padding: 20px 24px 24px;
+}
+
+.donut-canvas-area {
+  padding: 20px 40px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 280px;
 }
 </style>

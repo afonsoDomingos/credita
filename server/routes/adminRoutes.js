@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany, getFinancialStats } = require('../controllers/adminController');
+const { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany, getFinancialStats, getAdminCharts } = require('../controllers/adminController');
 const { updateSetting } = require('../controllers/systemController');
 const { getPendingReceipts, reviewReceipt } = require('../controllers/receiptController');
 const { protect, superadmin } = require('../middleware/authMiddleware');
 
 router.route('/finance')
   .get(protect, superadmin, getFinancialStats);
+
+router.route('/charts')
+  .get(protect, superadmin, getAdminCharts);
 
 router.route('/companies')
   .post(protect, superadmin, createCompany);

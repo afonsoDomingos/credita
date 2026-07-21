@@ -183,4 +183,61 @@ const getFinancialStats = async (req, res) => {
   }
 };
 
-module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany, getFinancialStats };
+// Dados para gráficos do Superadmin
+const getAdminCharts = async (req, res) => {
+  try {
+    const Receipt = require('../models/Receipt');
+    const Company = require('../models/Company');
+
+    const now = new Date();
+
+    // --- 1. Receita Mensal (últimos 6 meses) ---
+    const monthlyRevenue = [];
+    const monthLabels = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextD = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      const receipts = await Receipt.find({
+        status: 'approved',
+        createdAt: { $gte: d, $lt: nextD }
+      });
+      const total = receipts.reduce((acc, r) => acc + (r.amount || 0), 0);
+      monthlyRevenue.push(total);
+      monthLabels.push(d.toLocaleString('pt-PT', { month: 'short' }));
+    }
+
+    // --- 2. Distribuição de Planos ---
+    const plans = await Company.aggregate([
+      { $group: { _id: '$subscriptionPlan', count: { $sum: 1 } } }
+    ]);
+    const planLabels = plans.map(p => p._id ? (p._id.charAt(0).toUpperCase() + p._id.slice(1)) : 'N/A');
+    const planCounts = plans.map(p => p.count);
+
+    // --- 3. Novas Empresas por Mês (últimos 6 meses) ---
+    const newCompanies = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextD = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      const count = await Company.countDocuments({ createdAt: { $gte: d, $lt: nextD } });
+      newCompanies.push(count);
+    }
+
+    // --- 4. Status das Empresas ---
+    const activeCount = await Company.countDocuments({ isActive: true });
+    const inactiveCount = await Company.countDocuments({ isActive: false });
+
+    res.json({
+      monthLabels,
+      monthlyRevenue,
+      planLabels,
+      planCounts,
+      newCompanies,
+      statusCounts: [activeCount, inactiveCount]
+    });
+  } catch (error) {
+    console.error('Error in getAdminCharts:', error);
+    res.status(500).json({ message: 'Erro ao gerar dados dos gráficos' });
+  }
+};
+
+module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany, getFinancialStats, getAdminCharts };
