@@ -1071,6 +1071,17 @@ const impersonate = async (empresa) => {
 };
 
 onMounted(() => {
+  console.log('[ADMIN-DASHBOARD] Component mounted');
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log('[ADMIN-DASHBOARD] Current user:', user);
+  console.log('[ADMIN-DASHBOARD] User role:', user?.role);
+  
+  if (user?.role !== 'superadmin') {
+    console.error('[ADMIN-DASHBOARD] User is not superadmin! Cannot access admin panel.');
+    toast.error('Acesso negado: Apenas Superadmin pode aceder a este painel.');
+    return;
+  }
+  
   loadEmpresas();
 });
 </script>
