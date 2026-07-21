@@ -20,6 +20,9 @@ const getSettings = async (req, res) => {
 // Atualizar dados da empresa
 const updateSettings = async (req, res) => {
   try {
+    if (!req.user || !req.user.company) {
+      return res.status(400).json({ message: 'Acesso negado: sem empresa associada.' });
+    }
     const company = await Company.findById(req.user.company);
     
     if (!company) {
@@ -39,7 +42,8 @@ const updateSettings = async (req, res) => {
     const updatedCompany = await company.save();
     res.json(updatedCompany);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar dados da empresa' });
+    console.error('Error in updateSettings:', error);
+    res.status(500).json({ message: 'Erro ao atualizar dados da empresa', error: error.message });
   }
 };
 

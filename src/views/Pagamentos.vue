@@ -40,8 +40,15 @@
         </tbody>
       </table>
       
-      <div v-else class="p-6 text-center text-muted">
-        Ainda não tem pagamentos registados. Clique em "Registar Pagamento".
+      <div v-else class="empty-state-beautiful">
+        <div class="empty-icon-wrapper">
+          <CreditCard :size="48" class="text-muted" />
+        </div>
+        <h3>Nenhum Pagamento Registado</h3>
+        <p>Ainda não existem entradas de dinheiro no sistema. Quando os seus clientes pagarem, registe-os aqui.</p>
+        <button class="btn-primary mt-6 flex items-center gap-2" @click="openModal()">
+          <Plus :size="16" /> Registar Primeiro Pagamento
+        </button>
       </div>
     </div>
 
@@ -96,7 +103,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Plus, X } from '@lucide/vue';
+import { Plus, X, CreditCard } from '@lucide/vue';
 import api from '../api';
 
 const pagamentos = ref([]);
@@ -255,5 +262,41 @@ onMounted(() => {
   color: var(--primary-color);
   font-weight: 500;
   cursor: pointer;
+}
+
+/* Beautiful Empty State */
+.empty-state-beautiful {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon-wrapper {
+  width: 96px;
+  height: 96px;
+  background-color: var(--bg-body);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--text-muted);
+}
+
+.empty-state-beautiful h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.empty-state-beautiful p {
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0;
+  line-height: 1.5;
 }
 </style>

@@ -43,7 +43,7 @@ const routes = [
       { path: 'calendario', name: 'Calendário', component: Calendario },
       { path: 'relatorios', name: 'Relatórios', component: Relatorios },
       { path: 'recibos', name: 'Recibos', component: Recibos },
-      { path: 'notificacoes', name: 'Notificações', component: () => import('./views/Placeholder.vue') },
+      { path: 'notificacoes', name: 'Notificações', component: () => import('./views/Notificacoes.vue') },
       { path: 'estatisticas', name: 'Estatísticas', component: Estatisticas },
       { path: 'empresa', name: 'Empresa', component: Empresa },
       { path: 'perfil', name: 'Perfil', component: Perfil },
