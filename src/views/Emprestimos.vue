@@ -97,6 +97,26 @@
             <input type="date" v-model="form.dueDate" required />
           </div>
 
+          <!-- Simulador / Pré-visualização -->
+          <div v-if="form.amount && form.interestRate" class="simulador-box mt-4 p-4 surface shadow-sm border rounded">
+            <h4 class="font-bold text-sm mb-3 flex items-center gap-2 text-blue-600">
+              <Calculator :size="16" /> Pré-visualização do Empréstimo
+            </h4>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-muted">Capital Emprestado:</span>
+              <span class="font-medium">MT {{ parseFloat(form.amount).toLocaleString() }}</span>
+            </div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-muted">Juros ({{ form.interestRate }}%):</span>
+              <span class="font-medium text-orange-500">+ MT {{ simulacao.juros.toLocaleString() }}</span>
+            </div>
+            <div class="divider my-2 border-b border-dashed"></div>
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm">Total a Receber:</span>
+              <span class="font-bold text-lg text-green-600">MT {{ simulacao.total.toLocaleString() }}</span>
+            </div>
+          </div>
+
           <div v-if="errorMsg" class="error-msg mt-2">{{ errorMsg }}</div>
 
           <div class="modal-actions mt-6 flex justify-end gap-3">
@@ -112,8 +132,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Plus, X, FileText } from '@lucide/vue';
+import { ref, onMounted, computed } from 'vue';
+import { Plus, X, FileText, Calculator } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
@@ -129,6 +149,17 @@ const form = ref({
   amount: '',
   interestRate: '',
   dueDate: ''
+});
+
+// Calculadora de Simulação
+const simulacao = computed(() => {
+  const cap = parseFloat(form.value.amount) || 0;
+  const jurosRate = parseFloat(form.value.interestRate) || 0;
+  const valJuros = cap * (jurosRate / 100);
+  return {
+    juros: valJuros,
+    total: cap + valJuros
+  };
 });
 
 const loadEmprestimos = async () => {
