@@ -116,20 +116,31 @@ const salvarDefinicoes = async () => {
   successMsg.value = '';
   errorMsg.value = '';
   try {
-    // Temporarily disable logo upload - send JSON only
-    const res = await api.put('/company/settings', {
-      name: form.value.name,
-      phone: form.value.phone,
-      nif: form.value.nif
-    });
-    const responseData = res.data;
+    let responseData;
     
-    // Clear logo file if selected (upload temporarily disabled)
     if (logoFile.value) {
-      logoFile.value = null;
-      logoPreviewUrl.value = null;
-      toast.warning('Upload de logótipo temporariamente desativado. Apenas dados da empresa foram atualizados.');
+      const formData = new FormData();
+      formData.append('name', form.value.name);
+      formData.append('phone', form.value.phone);
+      formData.append('nif', form.value.nif);
+      formData.append('logo', logoFile.value);
+      
+      const res = await api.put('/company/settings', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      responseData = res.data;
+    } else {
+      const res = await api.put('/company/settings', {
+        name: form.value.name,
+        phone: form.value.phone,
+        nif: form.value.nif
+      });
+      responseData = res.data;
     }
+    
+    form.value.logoUrl = responseData.logoUrl; // Update with new remote URL
+    logoFile.value = null; // Clear pending file
+    logoPreviewUrl.value = null;
 
     // Synchronize company name in localStorage for Header / User Profile
     const storedUser = localStorage.getItem('user');
