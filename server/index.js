@@ -3,13 +3,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 // ── Startup diagnostics ──────────────────────────────────────────
 console.log('[STARTUP] Node version:', process.version);
 console.log('[STARTUP] MONGO_URI set:', !!process.env.MONGO_URI);
 console.log('[STARTUP] JWT_SECRET set:', !!process.env.JWT_SECRET);
 if (!process.env.MONGO_URI) {
-  console.error('[STARTUP] ❌ FATAL: MONGO_URI is not set! Add it to Vercel environment variables.');
+  console.error('[STARTUP] ❌ FATAL: MONGO_URI is not set! Add it to environment variables.');
+}
+if (!process.env.JWT_SECRET) {
+  console.warn('[STARTUP] ⚠️ WARNING: JWT_SECRET is not set. Using fallback for development. Set JWT_SECRET in production!');
 }
 // ─────────────────────────────────────────────────────────────────
 
@@ -17,6 +22,32 @@ const { upload } = require('./config/cloudinary');
 const Client = require('./models/Client');
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for now as it may break the app
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per 15 minutes
+  message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 
 // CORS - Restrict to specific origins in production
 const corsOptions = {
@@ -87,6 +118,8 @@ const supportRoutes = require('./routes/supportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 
+// Apply stricter rate limiting to auth routes
+app.use('/api/auth', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
