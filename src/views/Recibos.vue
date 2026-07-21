@@ -17,17 +17,35 @@
             <th>Cliente</th>
             <th>Método</th>
             <th>Valor Pago</th>
-            <th>Ação</th>
+            <th class="text-right">Ação</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="pay in payments" :key="pay._id">
-            <td>{{ formatDate(pay.paymentDate) }}</td>
-            <td class="font-medium">{{ pay.loan?.client?.name || 'Cliente Removido' }}</td>
-            <td class="capitalize">{{ pay.paymentMethod }}</td>
-            <td class="font-bold text-green">MZN {{ pay.amountPaid.toFixed(2) }}</td>
+          <tr v-for="pay in payments" :key="pay._id" class="table-row">
+            <td class="text-xs text-muted">{{ formatDate(pay.paymentDate) }}</td>
             <td>
-              <button class="btn-text" @click="imprimirRecibo(pay)">Imprimir Recibo</button>
+              <div class="client-cell flex items-center gap-3">
+                <img 
+                  v-if="pay.loan?.client?.profileImageUrl" 
+                  :src="pay.loan?.client?.profileImageUrl" 
+                  alt="Cliente" 
+                  class="avatar-circle" 
+                  style="object-fit: cover;"
+                />
+                <div v-else class="avatar-circle flex items-center justify-center font-bold bg-blue-100 text-blue-700">
+                  {{ (pay.loan?.client?.name || 'C').charAt(0).toUpperCase() }}
+                </div>
+                <span class="font-bold text-gray-800">{{ pay.loan?.client?.name || 'Cliente Removido' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="payment-method-tag capitalize">{{ pay.paymentMethod }}</span>
+            </td>
+            <td class="font-bold text-green">MT {{ pay.amountPaid.toLocaleString('pt-PT', { minimumFractionDigits: 2 }) }}</td>
+            <td class="text-right">
+              <button class="btn-print-action inline-flex items-center gap-1 text-xs" @click="imprimirRecibo(pay)">
+                <Printer :size="14" /> Imprimir Recibo
+              </button>
             </td>
           </tr>
         </tbody>
@@ -47,8 +65,9 @@
       <div class="receipt-card">
         <div class="receipt-header">
           <img v-if="company.logoUrl" :src="company.logoUrl" alt="Logo" class="print-logo" />
+          <div v-else class="print-logo-fallback">{{ company.name?.charAt(0) }}</div>
           <h2>{{ company.name }}</h2>
-          <p>NIF: {{ company.nif || 'N/A' }} | Tel: {{ company.phone || 'N/A' }}</p>
+          <p class="company-sub">NIF: {{ company.nif || 'N/A' }} | Tel: {{ company.phone || 'N/A' }}</p>
         </div>
         
         <div class="receipt-title">
@@ -63,7 +82,7 @@
           </div>
           <div class="receipt-row">
             <span class="label">A quantia de:</span>
-            <span class="value font-bold text-lg">MZN {{ selectedPayment.amountPaid.toFixed(2) }}</span>
+            <span class="value font-bold text-lg">MT {{ selectedPayment.amountPaid.toLocaleString('pt-PT', { minimumFractionDigits: 2 }) }}</span>
           </div>
           <div class="receipt-row">
             <span class="label">Referente a:</span>
@@ -145,26 +164,61 @@ onMounted(() => {
   padding: 16px 20px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
 }
 
 .data-table th {
   background-color: var(--bg-body);
   color: var(--text-muted);
+  font-weight: 650;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+}
+
+.payment-method-tag {
+  background-color: #F1F5F9;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.btn-print-action {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   font-weight: 600;
-  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.btn-print-action:hover {
+  background: var(--bg-body);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.text-right {
+  text-align: right;
 }
 
 .capitalize { text-transform: capitalize; }
 .text-green { color: #16A34A; }
-
-.btn-text {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 500;
-  cursor: pointer;
-}
-.btn-text:hover { text-decoration: underline; }
 
 /* Beautiful Empty State */
 .empty-state-beautiful {
@@ -251,6 +305,21 @@ onMounted(() => {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 10px;
+  }
+
+  .print-logo-fallback {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #EFF6FF;
+    color: #1D4ED8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 auto 10px;
+    border: 2px solid #BFDBFE;
   }
   
   .receipt-header h2 { margin: 0; font-size: 24px; }

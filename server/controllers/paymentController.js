@@ -11,7 +11,7 @@ const getPayments = async (req, res) => {
         select: 'amount',
         populate: {
           path: 'client',
-          select: 'name idCard'
+          select: 'name idCard profileImageUrl'
         }
       })
       .sort({ paymentDate: -1 });
@@ -58,7 +58,7 @@ const getPaymentById = async (req, res) => {
         select: 'amount',
         populate: {
           path: 'client',
-          select: 'name idCard address phone'
+          select: 'name idCard address phone profileImageUrl'
         }
       });
       
