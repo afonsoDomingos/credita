@@ -33,8 +33,12 @@
         </tbody>
       </table>
       
-      <div v-else class="p-6 text-center text-muted">
-        Nenhum pagamento registado.
+      <div v-else class="empty-state-beautiful">
+        <div class="empty-icon-wrapper">
+          <Printer :size="48" class="text-muted" />
+        </div>
+        <h3>Nenhum Recibo Disponível</h3>
+        <p>Ainda não existem pagamentos registados para gerar recibos. Os recibos aparecerão aqui automaticamente após o registo de pagamentos.</p>
       </div>
     </div>
 
@@ -161,6 +165,42 @@ onMounted(() => {
   cursor: pointer;
 }
 .btn-text:hover { text-decoration: underline; }
+
+/* Beautiful Empty State */
+.empty-state-beautiful {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon-wrapper {
+  width: 96px;
+  height: 96px;
+  background-color: var(--bg-body);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--text-muted);
+}
+
+.empty-state-beautiful h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.empty-state-beautiful p {
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0;
+  line-height: 1.5;
+}
 
 /* Print styling */
 .print-container {

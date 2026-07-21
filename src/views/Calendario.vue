@@ -57,8 +57,11 @@
               <AlertCircle :size="18" /> Em Atraso
             </h3>
           </div>
-          <div class="p-4" v-if="atrasados.length === 0">
-            <p class="text-center text-muted text-sm py-4">Nenhum empréstimo em atraso. Parabéns!</p>
+          <div class="empty-state-mini" v-if="atrasados.length === 0">
+            <div class="empty-icon-mini bg-red-50 text-red-300">
+              <AlertCircle :size="32" />
+            </div>
+            <p class="text-muted text-sm mt-3">Nenhum empréstimo em atraso. Parabéns!</p>
           </div>
           <table class="data-table" v-else>
             <thead>
@@ -91,8 +94,11 @@
               <Clock :size="18" /> Vencem Hoje
             </h3>
           </div>
-          <div class="p-4" v-if="hoje.length === 0">
-            <p class="text-center text-muted text-sm py-4">Nenhuma cobrança para hoje.</p>
+          <div class="empty-state-mini" v-if="hoje.length === 0">
+            <div class="empty-icon-mini bg-yellow-50 text-yellow-300">
+              <Clock :size="32" />
+            </div>
+            <p class="text-muted text-sm mt-3">Nenhuma cobrança para hoje.</p>
           </div>
           <table class="data-table" v-else>
             <thead>
@@ -121,8 +127,11 @@
               <CalendarIcon :size="18" /> Próximos 7 Dias
             </h3>
           </div>
-          <div class="p-4" v-if="proximos.length === 0">
-            <p class="text-center text-muted text-sm py-4">Nenhuma cobrança planeada para a próxima semana.</p>
+          <div class="empty-state-mini" v-if="proximos.length === 0">
+            <div class="empty-icon-mini bg-blue-50 text-blue-300">
+              <CalendarIcon :size="32" />
+            </div>
+            <p class="text-muted text-sm mt-3">Nenhuma cobrança planeada para a próxima semana.</p>
           </div>
           <table class="data-table" v-else>
             <thead>
@@ -338,5 +347,24 @@ onMounted(() => {
 
 .loader-wrapper {
   padding: 60px 0;
+}
+
+/* Mini Empty State for Dashboard Cards */
+.empty-state-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-icon-mini {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
