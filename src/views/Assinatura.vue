@@ -77,8 +77,8 @@
         <div class="bank-accounts flex flex-col gap-4">
           <div class="account-tile hover-lift">
             <div class="flex items-center gap-2 mr-4">
-              <img src="/mpesa.png" alt="M-Pesa" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1" />
-              <img src="/emola.png" alt="e-Mola" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1" />
+              <img src="/mpesa.svg" alt="M-Pesa" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1 border border-gray-100" />
+              <img src="/emola.svg" alt="e-Mola" class="w-12 h-12 object-contain bg-white rounded-lg shadow-sm p-1 border border-gray-100" />
             </div>
             <div class="account-details flex-1">
               <span class="account-label text-xs font-bold text-gray-500 uppercase tracking-wider">M-Pesa / e-Mola</span>

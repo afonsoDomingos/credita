@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Phone outline -->
+  <rect x="25" y="15" width="30" height="50" rx="4" fill="#F47B20"/>
+  <path d="M 35 10 L 35 15" stroke="#F47B20" stroke-width="3"/>
+  <path d="M 42 12 A 5 5 0 0 0 45 7" stroke="#F47B20" stroke-width="2" fill="none"/>
+  <path d="M 45 13 A 8 8 0 0 0 50 5" stroke="#F47B20" stroke-width="2" fill="none"/>
+  <!-- Screen -->
+  <rect x="30" y="22" width="20" height="20" fill="#FFFFFF"/>
+  <!-- Keyboard dots -->
+  <circle cx="32" cy="48" r="2" fill="#FFFFFF"/>
+  <circle cx="40" cy="48" r="2" fill="#FFFFFF"/>
+  <circle cx="48" cy="48" r="2" fill="#FFFFFF"/>
+  <circle cx="32" cy="54" r="2" fill="#FFFFFF"/>
+  <circle cx="40" cy="54" r="2" fill="#FFFFFF"/>
+  <circle cx="48" cy="54" r="2" fill="#FFFFFF"/>
+  <circle cx="32" cy="60" r="2" fill="#FFFFFF"/>
+  <circle cx="40" cy="60" r="2" fill="#FFFFFF"/>
+  <circle cx="48" cy="60" r="2" fill="#FFFFFF"/>
+  <!-- Money Bills -->
+  <g transform="rotate(-15 45 35)">
+    <rect x="45" y="30" width="35" height="20" rx="2" fill="#E86A10"/>
+  </g>
+  <g transform="rotate(15 50 40)">
+    <rect x="50" y="35" width="40" height="25" rx="2" fill="#F47B20"/>
+    <text x="70" y="52" font-family="Arial" font-size="16" font-weight="bold" fill="#FFFFFF" text-anchor="middle">$</text>
+  </g>
+  <!-- Text -->
+  <text x="50" y="88" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#F47B20" text-anchor="middle">e-Mola</text>
+</svg>
