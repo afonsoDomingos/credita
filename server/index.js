@@ -81,8 +81,7 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const loanRoutes = require('./routes/loanRoutes');
-// Temporarily disabled company routes that use cloudinary upload
-// const companyRoutes = require('./routes/companyRoutes');
+const companyRoutes = require('./routes/companyRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const systemRoutes = require('./routes/systemRoutes');
@@ -95,7 +94,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/payments', paymentRoutes);
-// app.use('/api/company', companyRoutes);
+app.use('/api/company', companyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/support', supportRoutes);
