@@ -21,11 +21,9 @@ const Client = require('./models/Client');
 
 const app = express();
 
-// CORS - Restrict to specific origins in production
+// CORS - Allow all origins for now (configure properly in production)
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-production-domain.com'] // Replace with actual domain
-    : true, // Allow all in development
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
