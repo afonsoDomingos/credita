@@ -2,21 +2,23 @@
   <div class="cliente-perfil-page">
     <div class="header-actions flex justify-between items-center mb-6">
       <div class="flex items-center gap-4">
-        <button class="btn-icon bg-surface" @click="$router.push('/app/clientes')" title="Voltar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <button class="back-btn flex items-center justify-center" @click="$router.push('/app/clientes')" title="Voltar aos Clientes">
+          <ArrowLeft :size="20" />
         </button>
         <div>
-          <h1 class="text-xl font-bold">Perfil do Cliente</h1>
-          <p class="text-muted text-sm">Histórico financeiro completo e score de confiança.</p>
+          <h1 class="text-2xl font-bold text-main">Perfil do Cliente</h1>
+          <p class="text-muted text-sm mt-0.5">Histórico financeiro completo e score de confiança.</p>
         </div>
       </div>
     </div>
 
-    <div v-if="loading" class="surface p-12 text-center text-muted">A carregar perfil...</div>
+    <div v-if="loading" class="surface loader-card p-12 text-center rounded-2xl shadow-sm">
+      <Spinner message="A carregar perfil do cliente..." />
+    </div>
 
-    <div v-else-if="profile" class="profile-content">
+    <div v-else-if="profile" class="profile-content space-y-6">
       <!-- Header do Perfil -->
-      <div class="surface profile-header mb-6">
+      <div class="surface profile-header rounded-2xl shadow-sm border p-6">
         <div class="profile-top flex items-center gap-6">
           <div class="profile-avatar">{{ profile.client.name.charAt(0) }}</div>
           <div class="flex-1">
@@ -30,98 +32,104 @@
           </div>
           <!-- Score de Confiança -->
           <div class="score-widget">
-            <div class="score-circle" :class="scoreClass">
+            <div class="score-circle shadow-sm" :class="scoreClass">
               <span class="score-value">{{ profile.stats.score }}</span>
             </div>
-            <span class="score-label">{{ scoreText }}</span>
+            <span class="score-label mt-1">{{ scoreText }}</span>
           </div>
         </div>
       </div>
 
       <!-- Cards de Métricas -->
-      <div class="stats-grid-4 mb-6">
-        <div class="surface metric-card">
+      <div class="stats-grid-4 gap-4">
+        <div class="surface metric-card rounded-2xl shadow-sm border p-5">
           <span class="metric-title">Total Emprestado</span>
-          <span class="metric-value text-blue">MT {{ profile.stats.totalEmprestado.toLocaleString() }}</span>
+          <span class="metric-value text-blue-600 mt-1">MT {{ profile.stats.totalEmprestado.toLocaleString() }}</span>
         </div>
-        <div class="surface metric-card">
+        <div class="surface metric-card rounded-2xl shadow-sm border p-5">
           <span class="metric-title">Total Pago</span>
-          <span class="metric-value text-green">MT {{ profile.stats.totalPago.toLocaleString() }}</span>
+          <span class="metric-value text-emerald-600 mt-1">MT {{ profile.stats.totalPago.toLocaleString() }}</span>
         </div>
-        <div class="surface metric-card">
+        <div class="surface metric-card rounded-2xl shadow-sm border p-5">
           <span class="metric-title">Em Dívida</span>
-          <span class="metric-value" :class="profile.stats.totalEmDivida > 0 ? 'text-red' : 'text-green'">MT {{ profile.stats.totalEmDivida.toLocaleString() }}</span>
+          <span class="metric-value mt-1" :class="profile.stats.totalEmDivida > 0 ? 'text-red-600' : 'text-emerald-600'">
+            MT {{ profile.stats.totalEmDivida.toLocaleString() }}
+          </span>
         </div>
-        <div class="surface metric-card">
-          <span class="metric-title">Empréstimos</span>
-          <div class="flex gap-3 mt-1">
-            <span class="mini-badge bg-blue-light text-blue">{{ profile.stats.emprestimosAtivos }} ativos</span>
-            <span class="mini-badge bg-green-light text-green">{{ profile.stats.emprestimosPagos }} pagos</span>
-            <span v-if="profile.stats.emprestimosAtraso > 0" class="mini-badge bg-red-light text-red">{{ profile.stats.emprestimosAtraso }} atraso</span>
+        <div class="surface metric-card rounded-2xl shadow-sm border p-5">
+          <span class="metric-title">Estado Empréstimos</span>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <span class="mini-badge bg-blue-100 text-blue-700 font-bold">{{ profile.stats.emprestimosAtivos }} ativos</span>
+            <span class="mini-badge bg-emerald-100 text-emerald-700 font-bold">{{ profile.stats.emprestimosPagos }} pagos</span>
+            <span v-if="profile.stats.emprestimosAtraso > 0" class="mini-badge bg-red-100 text-red-700 font-bold">{{ profile.stats.emprestimosAtraso }} atraso</span>
           </div>
         </div>
       </div>
 
       <!-- Empréstimos do Cliente -->
-      <div class="surface p-0 overflow-hidden mb-6">
-        <div class="p-5 border-b">
-          <h3 class="font-bold text-lg">Empréstimos</h3>
+      <div class="surface rounded-2xl shadow-sm border overflow-hidden">
+        <div class="p-5 border-b bg-slate-50/50">
+          <h3 class="font-bold text-base text-main">Empréstimos do Cliente</h3>
         </div>
-        <table v-if="profile.loans.length > 0" class="data-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Capital</th>
-              <th>Juros</th>
-              <th>Total c/ Juros</th>
-              <th>Vencimento</th>
-              <th>Estado</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="loan in profile.loans" :key="loan._id">
-              <td>{{ new Date(loan.createdAt).toLocaleDateString('pt-PT') }}</td>
-              <td class="font-bold">MT {{ loan.amount.toLocaleString() }}</td>
-              <td>{{ loan.interestRate }}%</td>
-              <td class="font-bold text-blue">MT {{ loan.totalComJuros.toLocaleString() }}</td>
-              <td>{{ new Date(loan.dueDate).toLocaleDateString('pt-PT') }}</td>
-              <td>
-                <span class="badge" :class="loan.status === 'active' ? 'badge-active' : loan.status === 'paid' ? 'badge-paid' : 'badge-danger'">
-                  {{ loan.status === 'active' ? 'Ativo' : loan.status === 'paid' ? 'Pago' : 'Em Dívida' }}
-                </span>
-              </td>
-              <td>
-                <button class="btn-text" @click="$router.push(`/app/emprestimos/${loan._id}`)">Ver Detalhes</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else class="p-8 text-center text-muted">Nenhum empréstimo registado para este cliente.</div>
+        <div class="overflow-x-auto">
+          <table v-if="profile.loans.length > 0" class="data-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Capital</th>
+                <th>Juros</th>
+                <th>Total c/ Juros</th>
+                <th>Vencimento</th>
+                <th>Estado</th>
+                <th class="text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="loan in profile.loans" :key="loan._id" class="table-row">
+                <td>{{ new Date(loan.createdAt).toLocaleDateString('pt-PT') }}</td>
+                <td class="font-bold">MT {{ loan.amount.toLocaleString() }}</td>
+                <td>{{ loan.interestRate }}%</td>
+                <td class="font-bold text-blue-600">MT {{ loan.totalComJuros.toLocaleString() }}</td>
+                <td>{{ new Date(loan.dueDate).toLocaleDateString('pt-PT') }}</td>
+                <td>
+                  <span class="badge" :class="loan.status === 'active' ? 'badge-active' : loan.status === 'paid' ? 'badge-paid' : 'badge-danger'">
+                    {{ loan.status === 'active' ? 'Ativo' : loan.status === 'paid' ? 'Pago' : 'Em Dívida' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <button class="btn-detalhes" @click="$router.push(`/app/emprestimos/${loan._id}`)">Ver Detalhes</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="p-8 text-center text-muted">Nenhum empréstimo registado para este cliente.</div>
+        </div>
       </div>
 
       <!-- Últimos Pagamentos -->
-      <div class="surface p-0 overflow-hidden">
-        <div class="p-5 border-b">
-          <h3 class="font-bold text-lg">Últimos Pagamentos</h3>
+      <div class="surface rounded-2xl shadow-sm border overflow-hidden">
+        <div class="p-5 border-b bg-slate-50/50">
+          <h3 class="font-bold text-base text-main">Últimos Pagamentos</h3>
         </div>
-        <table v-if="profile.payments.length > 0" class="data-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Valor Pago</th>
-              <th>Método</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="pay in profile.payments" :key="pay._id">
-              <td>{{ new Date(pay.paymentDate).toLocaleDateString('pt-PT') }}</td>
-              <td class="font-bold text-green">MT {{ pay.amountPaid.toLocaleString() }}</td>
-              <td class="capitalize">{{ traduzirMetodo(pay.paymentMethod) }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else class="p-8 text-center text-muted">Nenhum pagamento registado.</div>
+        <div class="overflow-x-auto">
+          <table v-if="profile.payments.length > 0" class="data-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Valor Pago</th>
+                <th>Método</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="pay in profile.payments" :key="pay._id" class="table-row">
+                <td>{{ new Date(pay.paymentDate).toLocaleDateString('pt-PT') }}</td>
+                <td class="font-bold text-emerald-600">MT {{ pay.amountPaid.toLocaleString() }}</td>
+                <td class="capitalize">{{ traduzirMetodo(pay.paymentMethod) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="p-8 text-center text-muted">Nenhum pagamento registado.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -130,6 +138,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { ArrowLeft } from '@lucide/vue';
+import Spinner from '../components/Spinner.vue';
 import api from '../api';
 
 const route = useRoute();
@@ -175,13 +185,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.profile-header {
-  padding: 32px;
+.cliente-perfil-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: var(--bg-body);
+  transform: translateX(-2px);
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   background: linear-gradient(135deg, #2563EB, #7C3AED);
   color: white;
@@ -197,12 +224,12 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .score-circle {
-  width: 72px;
-  height: 72px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -211,7 +238,7 @@ onMounted(() => {
 }
 
 .score-value {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 800;
 }
 
@@ -229,43 +256,32 @@ onMounted(() => {
 
 .stats-grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .metric-card {
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .metric-title {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
 .metric-value {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
 }
 
-.text-blue { color: #2563EB; }
-.text-green { color: #16A34A; }
-.text-red { color: #DC2626; }
-
 .mini-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
 }
-.bg-blue-light { background-color: #DBEAFE; }
-.bg-green-light { background-color: #DCFCE7; }
-.bg-red-light { background-color: #FEE2E2; }
 
 .data-table {
   width: 100%;
@@ -273,38 +289,54 @@ onMounted(() => {
 }
 
 .data-table th, .data-table td {
-  padding: 14px 20px;
+  padding: 16px 24px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
 .data-table th {
-  background-color: var(--bg-body);
-  color: var(--text-muted);
+  background-color: #F8FAFC;
+  color: #64748B;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-row {
+  transition: background-color 0.15s ease;
+}
+
+.table-row:hover {
+  background-color: #F8FAFC;
 }
 
 .badge {
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
 }
-.badge-active { background-color: #DBEAFE; color: #2563EB; }
-.badge-paid { background-color: #DCFCE7; color: #16A34A; }
-.badge-danger { background-color: #FEE2E2; color: #DC2626; }
+.badge-active { background-color: #DBEAFE; color: #1D4ED8; }
+.badge-paid { background-color: #DCFCE7; color: #15803D; }
+.badge-danger { background-color: #FEE2E2; color: #B91C1C; }
 
-.btn-text {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 500;
+.btn-detalhes {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.875rem;
+  transition: all 0.2s ease;
 }
-.btn-text:hover { text-decoration: underline; }
+.btn-detalhes:hover {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+}
 
 .capitalize { text-transform: capitalize; }
 
@@ -314,7 +346,7 @@ onMounted(() => {
     text-align: center;
   }
   .score-widget {
-    margin-top: 16px;
+    margin-top: 12px;
   }
 }
 </style>
