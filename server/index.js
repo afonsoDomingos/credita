@@ -77,6 +77,7 @@ app.use(async (req, res, next) => {
 });
 
 // Routes
+console.log('[ROUTES] Loading routes...');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -88,6 +89,7 @@ const systemRoutes = require('./routes/systemRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+console.log('[ROUTES] All routes loaded successfully');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
