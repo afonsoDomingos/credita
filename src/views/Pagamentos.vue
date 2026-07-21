@@ -34,7 +34,10 @@
             <td class="font-bold text-green">MT {{ pagamento.amountPaid.toLocaleString() }}</td>
             <td class="capitalize">{{ traduzirMetodo(pagamento.paymentMethod) }}</td>
             <td>
-              <button class="btn-text" title="Ver Recibo">Ver Recibo</button>
+              <button class="btn-text mr-3" @click="imprimirRecibo(pagamento._id)" title="Imprimir Recibo">Ver Recibo</button>
+              <button class="btn-icon text-red" @click="apagarPagamento(pagamento)" title="Anular Pagamento">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -158,6 +161,22 @@ const openModal = async () => {
 
 const closeModal = () => {
   showModal.value = false;
+};
+
+const imprimirRecibo = (paymentId) => {
+  window.open(`/print/recibo/${paymentId}`, '_blank');
+};
+
+const apagarPagamento = async (pagamento) => {
+  if (confirm(`Tem a certeza absoluta que deseja anular este pagamento de MT ${pagamento.amountPaid.toLocaleString()}?`)) {
+    try {
+      await api.delete(`/payments/${pagamento._id}`);
+      await loadPagamentos();
+    } catch (error) {
+      console.error('Erro ao anular pagamento', error);
+      alert('Erro ao tentar anular o pagamento.');
+    }
+  }
 };
 
 const salvarPagamento = async () => {

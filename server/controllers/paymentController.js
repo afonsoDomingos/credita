@@ -49,4 +49,46 @@ const createPayment = async (req, res) => {
   }
 };
 
-module.exports = { getPayments, createPayment };
+// Obter pagamento por ID (para recibo)
+const getPaymentById = async (req, res) => {
+  try {
+    const payment = await Payment.findOne({ _id: req.params.id, company: req.user.company })
+      .populate({
+        path: 'loan',
+        select: 'amount',
+        populate: {
+          path: 'client',
+          select: 'name idCard address phone'
+        }
+      });
+      
+    if (!payment) {
+      return res.status(404).json({ message: 'Pagamento não encontrado' });
+    }
+    
+    res.json(payment);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar pagamento' });
+  }
+};
+
+// Apagar / Anular um pagamento
+const deletePayment = async (req, res) => {
+  try {
+    const payment = await Payment.findOne({ _id: req.params.id, company: req.user.company });
+    
+    if (!payment) {
+      return res.status(404).json({ message: 'Pagamento não encontrado' });
+    }
+    
+    // Future logic: IF we updated the loan status to 'paid' when this payment was made, 
+    // we should probably revert it to 'active'. For MVP, just delete the payment.
+    await payment.deleteOne();
+    
+    res.json({ message: 'Pagamento anulado com sucesso' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao anular pagamento' });
+  }
+};
+
+module.exports = { getPayments, createPayment, getPaymentById, deletePayment };

@@ -15,7 +15,8 @@ import Perfil from './views/Perfil.vue';
 import Assinatura from './views/Assinatura.vue';
 import Ajuda from './views/Ajuda.vue';
 import Calendario from './views/Calendario.vue';
-
+import EmprestimoDetalhes from './views/EmprestimoDetalhes.vue';
+import ReciboPrint from './views/ReciboPrint.vue';
 const routes = [
   {
     path: '/',
@@ -32,6 +33,12 @@ const routes = [
     component: AuthView
   },
   {
+    path: '/print/recibo/:id',
+    name: 'ReciboPrint',
+    component: ReciboPrint,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/app',
     component: AppLayout,
     meta: { requiresAuth: true, role: 'empresa' },
@@ -39,6 +46,7 @@ const routes = [
       { path: '', name: 'Dashboard', component: Dashboard },
       { path: 'clientes', name: 'Clientes', component: Clientes },
       { path: 'emprestimos', name: 'Empréstimos', component: Emprestimos },
+      { path: 'emprestimos/:id', name: 'EmprestimoDetalhes', component: EmprestimoDetalhes },
       { path: 'pagamentos', name: 'Pagamentos', component: Pagamentos },
       { path: 'calendario', name: 'Calendário', component: Calendario },
       { path: 'relatorios', name: 'Relatórios', component: Relatorios },
