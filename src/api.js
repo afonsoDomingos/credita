@@ -13,13 +13,34 @@ api.interceptors.request.use((config) => {
   if (user && user.token) {
     config.headers.Authorization = `Bearer ${user.token}`;
   }
+  console.log(`[API-REQUEST] ${config.method?.toUpperCase()} ${config.url}`, config.data || '');
   return config;
 }, (error) => {
-  if (error.response && error.response.status === 403 && error.response.data?.code === 'SUBSCRIPTION_EXPIRED') {
-    // Redirecionar para a página de assinatura
-    window.location.href = '/app/assinatura';
-  }
+  console.error('[API-REQUEST-ERROR]', error);
   return Promise.reject(error);
 });
+
+api.interceptors.response.use(
+  (response) => {
+    console.log(`[API-RESPONSE] ${response.config.method?.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
+    return response;
+  },
+  (error) => {
+    console.error('[API-RESPONSE-ERROR]', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
+    if (error.response && error.response.status === 403 && error.response.data?.code === 'SUBSCRIPTION_EXPIRED') {
+      // Redirecionar para a página de assinatura
+      window.location.href = '/app/assinatura';
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 export default api;

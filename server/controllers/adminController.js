@@ -163,7 +163,14 @@ const impersonateCompany = async (req, res) => {
     }
     
     // Generate JWT for this user
-    const token = jwt.sign({ id: companyUser._id }, process.env.JWT_SECRET || 'etako_super_secret', {
+    if (!process.env.JWT_SECRET) {
+      console.error('[SECURITY] ❌ FATAL: JWT_SECRET não está definido nas variáveis de ambiente!');
+      return res.status(500).json({ 
+        message: 'Erro de configuração do servidor',
+        code: 'SERVER_CONFIG_ERROR'
+      });
+    }
+    const token = jwt.sign({ id: companyUser._id }, process.env.JWT_SECRET, {
       expiresIn: '2h', // Short lived token for security during impersonation
     });
     

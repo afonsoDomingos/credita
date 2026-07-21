@@ -194,8 +194,17 @@ const handleLogin = async () => {
   loading.value = true;
   loginError.value = '';
   
+  console.log('[AUTH-FRONTEND] Iniciando login para:', loginForm.value.email);
+  
   try {
     const { data } = await api.post('/auth/login', loginForm.value);
+    
+    console.log('[AUTH-FRONTEND] Login bem-sucedido:', {
+      id: data._id,
+      email: data.email,
+      role: data.role,
+      hasToken: !!data.token
+    });
     
     localStorage.setItem('user', JSON.stringify({
       id: data._id,
@@ -204,12 +213,22 @@ const handleLogin = async () => {
       token: data.token
     }));
     
+    console.log('[AUTH-FRONTEND] Utilizador guardado no localStorage');
+    
     if (data.role === 'superadmin') {
+      console.log('[AUTH-FRONTEND] Redirecionando para /admin');
       router.push('/admin');
     } else {
+      console.log('[AUTH-FRONTEND] Redirecionando para /app');
       router.push('/app');
     }
   } catch (error) {
+    console.error('[AUTH-FRONTEND-ERROR] Falha no login:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.response?.data?.code
+    });
     loginError.value = error.response?.data?.message || 'Erro ao iniciar sessão.';
   } finally {
     loading.value = false;

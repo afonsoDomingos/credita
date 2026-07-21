@@ -42,7 +42,10 @@ UserSchema.pre('save', async function() {
 });
 
 UserSchema.methods.matchPassword = async function(enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  console.log(`[USER-MODEL] [${new Date().toISOString()}] Comparando password para email: ${this.email}`);
+  const isMatch = await bcrypt.compare(enteredPassword, this.password);
+  console.log(`[USER-MODEL] Password match result: ${isMatch}`);
+  return isMatch;
 };
 
 module.exports = mongoose.model('User', UserSchema);

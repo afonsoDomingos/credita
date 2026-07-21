@@ -13,7 +13,7 @@ const getSettings = async (req, res) => {
     res.json(company);
   } catch (error) {
     console.error('Error in getSettings:', error);
-    res.status(500).json({ message: 'Erro ao buscar dados da empresa', error: error.message, stack: error.stack });
+    res.status(500).json({ message: 'Erro ao buscar dados da empresa' });
   }
 };
 
@@ -43,7 +43,7 @@ const updateSettings = async (req, res) => {
     res.json(updatedCompany);
   } catch (error) {
     console.error('Error in updateSettings:', error);
-    res.status(500).json({ message: 'Erro ao atualizar dados da empresa', error: error.message, stack: error.stack });
+    res.status(500).json({ message: 'Erro ao atualizar dados da empresa' });
   }
 };
 

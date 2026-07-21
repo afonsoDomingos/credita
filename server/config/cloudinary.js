@@ -44,7 +44,20 @@ if (isCloudinaryConfigured) {
   });
 }
 
-const multerUpload = multer({ storage: storage });
+const multerUpload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de ficheiro não permitido. Apenas JPG, PNG e PDF são aceites.'), false);
+    }
+  }
+});
 
 // Wrapper para interceptar o upload e gerar o link web acessível quando for local
 const customUpload = {
