@@ -1,23 +1,23 @@
 <template>
-  <div class="emprestimo-detalhes-page">
+  <div class="emprestimo-detalhes-page space-y-6">
     <!-- Header Navigation & Actions -->
-    <div class="header-actions flex justify-between items-center mb-6 flex-wrap gap-4">
-      <div class="flex items-center gap-4">
+    <div class="header-actions flex justify-between items-center flex-wrap gap-4">
+      <div class="flex items-center gap-3">
         <button class="back-btn flex items-center justify-center" @click="$router.push('/app/emprestimos')" title="Voltar aos Empréstimos">
-          <ArrowLeft :size="20" />
+          <ArrowLeft :size="18" />
         </button>
         <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold text-main">Detalhes do Empréstimo</h1>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-2xl font-bold text-slate-800">Detalhes do Empréstimo</h1>
             <span v-if="loan" class="status-pill" :class="statusBadgeClass">
               {{ statusLabel }}
             </span>
           </div>
-          <p class="text-muted text-sm mt-0.5">Histórico completo, progresso e situação financeira.</p>
+          <p class="text-muted text-xs mt-0.5">Histórico completo, progresso de amortização e situação financeira.</p>
         </div>
       </div>
 
-      <div v-if="loan" class="flex items-center gap-3 flex-wrap">
+      <div v-if="loan" class="flex items-center gap-2.5 flex-wrap">
         <a v-if="valorEmDivida > 0 && loan.client?.phone" :href="gerarLinkWhatsApp(loan)" target="_blank" class="btn-whatsapp flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
           Cobrar no WhatsApp
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="surface loader-card p-12 text-center rounded-2xl shadow-sm">
+    <div v-if="loading" class="surface loader-card p-12 text-center rounded-2xl shadow-sm border">
       <Spinner message="A carregar dados do empréstimo..." />
     </div>
 
@@ -40,18 +40,18 @@
         <!-- Card 1: Cliente -->
         <div class="surface premium-card">
           <div class="flex items-start justify-between">
-            <div>
-              <span class="card-label">Cliente</span>
-              <router-link :to="`/app/clientes/${loan.client?._id}`" class="text-lg font-bold text-main hover:text-blue-600 block mt-1 transition-colors">
+            <div class="flex-1">
+              <span class="card-label-badge">CLIENTE</span>
+              <router-link :to="`/app/clientes/${loan.client?._id}`" class="text-lg font-bold text-slate-800 hover:text-blue-600 block mt-1 transition-colors truncate">
                 {{ loan.client?.name || 'Desconhecido' }}
               </router-link>
-              <p class="text-xs text-muted mt-1 flex items-center gap-1">
-                <span>📱 {{ loan.client?.phone || 'Sem telefone' }}</span>
-                <span v-if="loan.client?.idCard">• BI: {{ loan.client.idCard }}</span>
-              </p>
+              <div class="text-xs text-slate-500 mt-1.5 flex items-center gap-2 flex-wrap">
+                <span class="flex items-center gap-1 font-medium text-slate-700">📱 {{ loan.client?.phone || 'Sem telefone' }}</span>
+                <span v-if="loan.client?.idCard" class="text-slate-400">• BI: {{ loan.client.idCard }}</span>
+              </div>
             </div>
             <div class="card-icon bg-blue-50 text-blue-600">
-              <User :size="22" />
+              <User :size="20" />
             </div>
           </div>
         </div>
@@ -59,34 +59,34 @@
         <!-- Card 2: Total a Receber -->
         <div class="surface premium-card">
           <div class="flex items-start justify-between">
-            <div>
-              <span class="card-label">Total Esperado</span>
+            <div class="flex-1">
+              <span class="card-label-badge">TOTAL ESPERADO</span>
               <h3 class="text-2xl font-black text-blue-600 mt-1">MT {{ totalEsperado.toLocaleString() }}</h3>
-              <p class="text-xs text-muted mt-1">
-                Capital: <strong class="text-main">MT {{ loan.amount.toLocaleString() }}</strong> + Juro: <strong class="text-main">{{ loan.interestRate }}%</strong>
+              <p class="text-xs text-slate-500 mt-1.5">
+                Capital: <strong class="text-slate-800">MT {{ loan.amount.toLocaleString() }}</strong> + Juro: <strong class="text-slate-800">{{ loan.interestRate }}%</strong>
               </p>
             </div>
             <div class="card-icon bg-emerald-50 text-emerald-600">
-              <Banknote :size="22" />
+              <Banknote :size="20" />
             </div>
           </div>
         </div>
 
         <!-- Card 3: Em Dívida / Vencimento -->
-        <div class="surface premium-card" :class="valorEmDivida > 0 ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-green-500'">
+        <div class="surface premium-card" :class="valorEmDivida > 0 ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-emerald-500'">
           <div class="flex items-start justify-between">
-            <div>
-              <span class="card-label">Saldo em Dívida</span>
-              <h3 class="text-2xl font-black mt-1" :class="valorEmDivida > 0 ? 'text-red-600' : 'text-green-600'">
+            <div class="flex-1">
+              <span class="card-label-badge">SALDO EM DÍVIDA</span>
+              <h3 class="text-2xl font-black mt-1" :class="valorEmDivida > 0 ? 'text-red-600' : 'text-emerald-600'">
                 MT {{ valorEmDivida.toLocaleString() }}
               </h3>
-              <p class="text-xs text-muted mt-1 flex items-center gap-1">
-                <Calendar :size="12" /> Vencimento: <strong class="text-main">{{ new Date(loan.dueDate).toLocaleDateString('pt-PT') }}</strong>
+              <p class="text-xs text-slate-500 mt-1.5 flex items-center gap-1">
+                <Calendar :size="13" class="text-slate-400" /> Vencimento: <strong class="text-slate-800">{{ new Date(loan.dueDate).toLocaleDateString('pt-PT') }}</strong>
               </p>
             </div>
-            <div class="card-icon" :class="valorEmDivida > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'">
-              <AlertCircle v-if="valorEmDivida > 0" :size="22" />
-              <CheckCircle2 v-else :size="22" />
+            <div class="card-icon" :class="valorEmDivida > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'">
+              <AlertCircle v-if="valorEmDivida > 0" :size="20" />
+              <CheckCircle2 v-else :size="20" />
             </div>
           </div>
         </div>
@@ -96,11 +96,11 @@
       <div class="surface progress-card p-6 rounded-2xl shadow-sm border">
         <div class="flex justify-between items-center mb-3">
           <div>
-            <h3 class="font-bold text-base text-main">Progresso de Amortização</h3>
-            <p class="text-xs text-muted mt-0.5">Acompanhamento em tempo real das parcelas liquidadas</p>
+            <h3 class="font-bold text-base text-slate-800">Progresso de Amortização</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Acompanhamento em tempo real das parcelas liquidadas</p>
           </div>
           <div class="text-right">
-            <span class="text-2xl font-extrabold" :class="percentagemPaga === 100 ? 'text-green-600' : 'text-blue-600'">
+            <span class="text-2xl font-black" :class="percentagemPaga === 100 ? 'text-emerald-600' : 'text-blue-600'">
               {{ percentagemPaga }}%
             </span>
           </div>
@@ -114,11 +114,13 @@
           ></div>
         </div>
 
-        <div class="flex justify-between items-center mt-3 text-xs">
-          <span class="font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+        <div class="flex justify-between items-center mt-3.5 text-xs flex-wrap gap-2">
+          <span class="font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
             Recebido: <strong>MT {{ totalPago.toLocaleString() }}</strong>
           </span>
-          <span class="font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+          <span class="font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
             Falta Amortizar: <strong>MT {{ valorEmDivida.toLocaleString() }}</strong>
           </span>
         </div>
@@ -128,8 +130,8 @@
       <div class="surface rounded-2xl shadow-sm border overflow-hidden">
         <div class="p-5 border-b flex justify-between items-center bg-slate-50/50">
           <div>
-            <h3 class="font-bold text-base text-main">Histórico de Pagamentos</h3>
-            <p class="text-xs text-muted mt-0.5">Recibos e amortizações efetuadas neste empréstimo</p>
+            <h3 class="font-bold text-base text-slate-800">Histórico de Pagamentos</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Recibos e amortizações efetuadas neste empréstimo</p>
           </div>
           <span class="badge-count-pill" v-if="loan.payments && loan.payments.length > 0">
             {{ loan.payments.length }} {{ loan.payments.length === 1 ? 'pagamento' : 'pagamentos' }}
@@ -148,10 +150,10 @@
             </thead>
             <tbody>
               <tr v-for="pay in loan.payments" :key="pay._id" class="table-row">
-                <td class="font-medium text-slate-700">
+                <td class="font-medium text-slate-700 text-xs">
                   {{ new Date(pay.paymentDate).toLocaleDateString('pt-PT') }}
                 </td>
-                <td class="font-bold text-green-600 text-base">
+                <td class="font-bold text-emerald-600 text-sm">
                   MT {{ pay.amountPaid.toLocaleString() }}
                 </td>
                 <td>
@@ -171,15 +173,15 @@
         </div>
         
         <!-- Estado Vazio Lindo -->
-        <div v-else class="empty-payments p-10 text-center flex flex-col items-center justify-center">
-          <div class="empty-icon-box mb-3 bg-slate-100 text-slate-400 p-4 rounded-full">
-            <Receipt :size="36" />
+        <div v-else class="empty-payments p-12 text-center flex flex-col items-center justify-center">
+          <div class="empty-icon-box mb-3 bg-blue-50 text-blue-600 p-4 rounded-2xl shadow-xs">
+            <Receipt :size="32" />
           </div>
           <h4 class="font-bold text-slate-800 text-base">Nenhum Pagamento Registado</h4>
-          <p class="text-muted text-xs max-w-sm mt-1 mb-4">
+          <p class="text-slate-500 text-xs max-w-sm mt-1 mb-5">
             Ainda não foi efetuada nenhuma amortização para este empréstimo. Assim que o cliente pagar, registe aqui.
           </p>
-          <button class="btn-primary text-xs flex items-center gap-2" @click="$router.push('/app/pagamentos')">
+          <button class="btn-primary text-xs flex items-center gap-2 px-5 py-2.5 shadow-sm" @click="$router.push('/app/pagamentos')">
             <Plus :size="14" /> Registar Primeiro Pagamento
           </button>
         </div>
@@ -296,18 +298,19 @@ onMounted(() => {
 }
 
 .back-btn {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-surface);
-  color: var(--text-main);
+  border: 1px solid #E2E8F0;
+  background-color: white;
+  color: #475569;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .back-btn:hover {
-  background-color: var(--bg-body);
+  background-color: #F8FAFC;
+  color: #0F172A;
   transform: translateX(-2px);
 }
 
@@ -326,8 +329,8 @@ onMounted(() => {
 .btn-whatsapp {
   background-color: #25D366;
   color: white;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  padding: 9px 18px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 0.875rem;
   text-decoration: none;
@@ -338,8 +341,8 @@ onMounted(() => {
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  padding: 9px 18px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 0.875rem;
   border: none;
@@ -352,7 +355,7 @@ onMounted(() => {
   background-color: #F3F4F6;
   color: #374151;
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   font-weight: 600;
   font-size: 0.875rem;
   border: 1px solid #E5E7EB;
@@ -366,30 +369,31 @@ onMounted(() => {
 }
 
 .premium-card {
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 20px 24px;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .premium-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
 
-.card-label {
-  font-size: 0.75rem;
-  font-weight: 700;
+.card-label-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  color: #94A3B8;
 }
 
 .card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,10 +403,11 @@ onMounted(() => {
 .progress-track-lg {
   width: 100%;
   height: 14px;
-  background-color: #E2E8F0;
+  background-color: #F1F5F9;
   border-radius: 20px;
   overflow: hidden;
   padding: 2px;
+  border: 1px solid #E2E8F0;
 }
 
 .progress-fill-lg {
@@ -434,7 +439,7 @@ onMounted(() => {
 }
 
 .data-table th, .data-table td {
-  padding: 16px 24px;
+  padding: 14px 20px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
@@ -471,7 +476,7 @@ onMounted(() => {
   color: #0D9488;
   border: 1px solid #CCFBF1;
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
