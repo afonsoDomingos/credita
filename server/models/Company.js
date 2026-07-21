@@ -17,7 +17,7 @@ const CompanySchema = new mongoose.Schema({
   },
   subscriptionPlan: {
     type: String,
-    enum: ['trial', 'pro', 'premium', 'mensal'],
+    enum: ['trial', 'pro', 'premium', 'mensal', 'trimestral', 'anual'],
     default: 'trial'
   },
   subscriptionStatus: {
