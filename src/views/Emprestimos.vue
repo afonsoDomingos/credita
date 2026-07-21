@@ -111,24 +111,39 @@
           </div>
 
           <!-- Simulador / Pré-visualização -->
-          <div v-if="form.amount && form.interestRate" class="simulador-box mt-4 p-4 surface shadow-sm border rounded">
-            <h4 class="font-bold text-sm mb-3 flex items-center gap-2 text-blue-600">
-              <Calculator :size="16" /> Pré-visualização do Empréstimo
-            </h4>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm text-muted">Capital Emprestado:</span>
-              <span class="font-medium">MT {{ parseFloat(form.amount).toLocaleString() }}</span>
+          <transition name="preview-fade">
+            <div v-if="form.amount && form.interestRate" class="simulador-preview">
+              <!-- Header -->
+              <div class="preview-header">
+                <div class="preview-header-icon">
+                  <Calculator :size="15" />
+                </div>
+                <span class="preview-header-title">Simulação do Empréstimo</span>
+              </div>
+
+              <!-- Rows -->
+              <div class="preview-body">
+                <div class="preview-row">
+                  <span class="preview-label">Capital Emprestado</span>
+                  <span class="preview-value">MT {{ formatMoney(form.amount) }}</span>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-label">Taxa de Juro aplicada</span>
+                  <span class="preview-rate">{{ form.interestRate }}%</span>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-label">Juro a cobrar</span>
+                  <span class="preview-interest">+ MT {{ formatMoney(simulacao.juros) }}</span>
+                </div>
+              </div>
+
+              <!-- Total -->  
+              <div class="preview-total">
+                <span class="preview-total-label">Total a Receber</span>
+                <span class="preview-total-value">MT {{ formatMoney(simulacao.total) }}</span>
+              </div>
             </div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm text-muted">Juros ({{ form.interestRate }}%):</span>
-              <span class="font-medium text-orange-500">+ MT {{ simulacao.juros.toLocaleString() }}</span>
-            </div>
-            <div class="divider my-2 border-b border-dashed"></div>
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-sm">Total a Receber:</span>
-              <span class="font-bold text-lg text-green-600">MT {{ simulacao.total.toLocaleString() }}</span>
-            </div>
-          </div>
+          </transition>
 
           <div v-if="errorMsg" class="error-msg mt-2">{{ errorMsg }}</div>
 
@@ -148,6 +163,10 @@
 import { ref, onMounted, computed } from 'vue';
 import { Plus, X, FileText, Calculator } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
+
+const formatMoney = (value) => {
+  return Number(value || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 import api from '../api';
 
 const emprestimos = ref([]);
@@ -408,4 +427,113 @@ onMounted(() => {
   margin: 0;
   line-height: 1.5;
 }
+
+/* ── Simulador / Preview ── */
+.simulador-preview {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid #DBEAFE;
+  background: #F8FBFF;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #EFF6FF, #F0F9FF);
+  border-bottom: 1px solid #DBEAFE;
+}
+
+.preview-header-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.preview-header-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1D4ED8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 1.5px dashed #BFDBFE;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preview-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.preview-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: 'Courier New', monospace;
+}
+
+.preview-rate {
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #FFF7ED;
+  color: #C2410C;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.preview-interest {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #EA580C;
+  font-family: 'Courier New', monospace;
+}
+
+.preview-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+}
+
+.preview-total-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.preview-total-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #15803D;
+  font-family: 'Courier New', monospace;
+}
+
+/* Transition */
+.preview-fade-enter-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.preview-fade-enter-from { opacity: 0; transform: translateY(-8px); }
+.preview-fade-leave-active { transition: all 0.2s ease; }
+.preview-fade-leave-to { opacity: 0; transform: translateY(-4px); }
 </style>
