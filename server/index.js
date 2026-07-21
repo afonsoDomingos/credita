@@ -16,8 +16,8 @@ if (!process.env.JWT_SECRET) {
 }
 // ─────────────────────────────────────────────────────────────────
 
-// Cloudinary upload configuration
-const { upload } = require('./config/cloudinary');
+// Cloudinary upload configuration - temporarily disabled to restore login
+// const { upload } = require('./config/cloudinary');
 const Client = require('./models/Client'); // Not used in index.js
 
 const app = express();

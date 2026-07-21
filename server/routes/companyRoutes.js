@@ -3,11 +3,12 @@ const router = express.Router();
 const { getSettings, updateSettings } = require('../controllers/companyController');
 const { getMyReceipts } = require('../controllers/receiptController');
 const { protect } = require('../middleware/authMiddleware');
-const { upload } = require('../config/cloudinary');
+// Temporarily disabled cloudinary upload to restore login
+// const { upload } = require('../config/cloudinary');
 
 router.route('/settings')
   .get(protect, getSettings)
-  .put(protect, upload.single('logo'), updateSettings);
+  .put(protect, updateSettings); // Removed upload.single('logo')
 
 // Temporarily disabled receipt upload routes
 // router.route('/receipts')
