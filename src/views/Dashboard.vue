@@ -115,11 +115,11 @@ import api from '../api';
 const router = useRouter();
 
 const irParaNovoEmprestimo = () => {
-  router.push({ path: '/emprestimos', query: { novo: '1' } });
+  router.push({ path: '/app/emprestimos', query: { novo: '1' } });
 };
 
 const exportarDados = () => {
-  router.push('/relatorios');
+  router.push('/app/relatorios');
 };
 
 // Register Chart.js components
