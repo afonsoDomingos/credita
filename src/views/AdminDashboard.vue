@@ -87,9 +87,16 @@
         <tbody>
           <tr v-for="empresa in empresas" :key="empresa._id" class="table-row">
             <td>
-              <div class="company-name-cell">
-                <img v-if="empresa.logoUrl" :src="empresa.logoUrl" alt="Logo" class="avatar-circle" style="object-fit: cover;" />
-                <div v-else class="avatar-circle">
+              <div class="company-name-cell flex items-center gap-3">
+                <img 
+                  v-if="empresa.logoUrl && !logoErrors[empresa._id]" 
+                  :src="empresa.logoUrl" 
+                  alt="Logo" 
+                  class="avatar-circle" 
+                  style="object-fit: cover;" 
+                  @error="onLogoError(empresa._id)" 
+                />
+                <div v-else class="avatar-circle flex items-center justify-center font-bold bg-blue-100 text-blue-700">
                   {{ empresa.name.charAt(0).toUpperCase() }}
                 </div>
                 <span class="font-bold text-gray-800">{{ empresa.name }}</span>
@@ -439,8 +446,10 @@ const toast = useToast();
 const empresas = ref([]);
 const receipts = ref([]);
 const stats = ref(null);
-const loading = ref(true);
-const activeTab = ref('empresas');
+const logoErrors = ref({});
+const onLogoError = (id) => {
+  logoErrors.value[id] = true;
+};
 
 const financeData = ref(null);
 const loadingFinance = ref(false);
