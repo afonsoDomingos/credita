@@ -114,9 +114,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 24px;
 }
 
@@ -124,17 +131,42 @@ onMounted(() => {
   padding: 24px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+  border-radius: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,0.1);
 }
 
 .stat-icon {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.stat-info h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.25rem;
 }
 
 /* Colors */
@@ -144,39 +176,44 @@ onMounted(() => {
 .text-orange { color: #F97316; }
 .bg-green-light { background-color: #F0FDF4; }
 .text-green { color: #16A34A; }
-.bg-green { background-color: #16A34A; }
+.bg-green { background-color: #10B981; }
 .bg-red-light { background-color: #FEF2F2; }
 .text-red { color: #EF4444; }
 
 /* Progress bar */
 .progress-bar-container {
-  margin-top: 16px;
+  margin-top: 24px;
+  padding: 12px 0;
 }
 
 .progress-labels {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .progress-track {
   width: 100%;
-  height: 12px;
+  height: 16px;
   background-color: var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .progress-fill {
   height: 100%;
   background-color: #10B981;
   border-radius: 8px;
-  transition: width 1s ease-in-out;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 
 .loader-wrapper {
   padding: 60px 0;
+  border-radius: 20px;
 }
 </style>
