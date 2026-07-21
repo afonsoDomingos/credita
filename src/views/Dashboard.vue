@@ -45,22 +45,25 @@
         <div class="surface chart-card">
           <div class="card-header flex justify-between items-center">
             <h3 class="font-semibold">Fluxo de Caixa & Recebimentos</h3>
-            <button class="btn-icon"><MoreHorizontal :size="18" /></button>
+            <span class="text-xs text-muted">Últimos 6 meses</span>
           </div>
-          <div class="chart-placeholder flex items-center justify-center bg-light">
-            <BarChart2 :size="48" class="text-muted opacity-50" />
-            <span class="text-muted ml-2">Gráfico de Barras / Linhas</span>
+          <div class="chart-container p-4">
+            <Line v-if="lineChartData" :data="lineChartData" :options="lineChartOptions" />
+            <div v-else class="chart-placeholder flex items-center justify-center bg-light">
+              <span class="text-muted">A carregar gráfico...</span>
+            </div>
           </div>
         </div>
         
         <div class="grid-2 gap-6">
           <div class="surface chart-card">
             <div class="card-header flex justify-between items-center">
-              <h3 class="font-semibold">Status de Empréstimos</h3>
-              <button class="btn-icon"><MoreHorizontal :size="18" /></button>
+              <h3 class="font-semibold">Estado da Carteira</h3>
+              <span class="text-xs text-muted">Distribuição</span>
             </div>
-            <div class="chart-placeholder flex items-center justify-center bg-light" style="height: 200px;">
-              <PieChart :size="48" class="text-muted opacity-50" />
+            <div class="chart-container-sm p-4 flex items-center justify-center">
+              <Doughnut v-if="doughnutChartData" :data="doughnutChartData" :options="doughnutChartOptions" />
+              <div v-else class="text-muted text-sm">A carregar...</div>
             </div>
           </div>
           
@@ -97,14 +100,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { 
   Users, Banknote, CreditCard, Wallet, 
   TrendingUp, TrendingDown, AlertCircle, 
   CheckCircle2, Download, Plus, MoreHorizontal,
   BarChart2, PieChart, Calendar
 } from '@lucide/vue';
+import { Line, Doughnut } from 'vue-chartjs';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import api from '../api';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 const loading = ref(true);
 const dashboardData = ref(null);
@@ -126,6 +134,101 @@ const loadDashboard = async () => {
     console.error('Error loading dashboard', error);
   } finally {
     loading.value = false;
+  }
+};
+
+// Chart.js Data (Computed from API data)
+const lineChartData = computed(() => {
+  if (!dashboardData.value?.chartData) return null;
+  const cd = dashboardData.value.chartData;
+  return {
+    labels: cd.labelsMeses,
+    datasets: [{
+      label: 'Recebimentos (MT)',
+      data: cd.receitasMensais,
+      borderColor: '#2563EB',
+      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#2563EB',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7
+    }]
+  };
+});
+
+const lineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1F2937',
+      titleFont: { size: 13 },
+      bodyFont: { size: 12 },
+      padding: 12,
+      cornerRadius: 8,
+      callbacks: {
+        label: (ctx) => `MT ${ctx.parsed.y.toLocaleString()}`
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: { color: 'rgba(0,0,0,0.04)' },
+      ticks: {
+        callback: (v) => `MT ${v.toLocaleString()}`,
+        font: { size: 11 },
+        color: '#9CA3AF'
+      }
+    },
+    x: {
+      grid: { display: false },
+      ticks: { font: { size: 11 }, color: '#9CA3AF' }
+    }
+  },
+  animation: {
+    duration: 1200,
+    easing: 'easeOutQuart'
+  }
+};
+
+const doughnutChartData = computed(() => {
+  if (!dashboardData.value?.chartData) return null;
+  const c = dashboardData.value.chartData.carteira;
+  return {
+    labels: ['Ativos', 'Pagos', 'Em Dívida'],
+    datasets: [{
+      data: [c.ativos, c.pagos, c.divida],
+      backgroundColor: ['#3B82F6', '#10B981', '#EF4444'],
+      borderColor: ['#fff', '#fff', '#fff'],
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  };
+});
+
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        padding: 16,
+        usePointStyle: true,
+        pointStyle: 'circle',
+        font: { size: 12 }
+      }
+    }
+  },
+  cutout: '65%',
+  animation: {
+    animateRotate: true,
+    duration: 1000
   }
 };
 
@@ -258,6 +361,16 @@ onMounted(() => {
 .card-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+.chart-container-sm {
+  height: 260px;
+  position: relative;
 }
 
 .chart-placeholder {

@@ -12,7 +12,6 @@ const getEmpresaStats = async (req, res) => {
     const totalClientes = await Client.countDocuments({ company: companyId });
     const totalEmprestimosAtivos = await Loan.countDocuments({ company: companyId, status: 'active' });
     
-    // Podemos somar o valor emprestado com agregação, mas para já simplificamos para 0 se não houver
     const emprestimos = await Loan.find({ company: companyId });
     const valorEmprestado = emprestimos.reduce((acc, loan) => acc + loan.amount, 0);
 
@@ -26,13 +25,52 @@ const getEmpresaStats = async (req, res) => {
     // Também enviamos a própria info da empresa para o plano
     const empresa = await Company.findById(companyId);
 
+    // --- DADOS PARA GRÁFICOS ---
+
+    // 1. Receitas por Mês (últimos 6 meses)
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    
+    const receitasMensais = [];
+    const labelsMeses = [];
+    const mesesPT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    for (let i = 5; i >= 0; i--) {
+      const mesInicio = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mesFim = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+      
+      const somaMes = pagamentos
+        .filter(p => {
+          const d = new Date(p.paymentDate);
+          return d >= mesInicio && d <= mesFim;
+        })
+        .reduce((acc, p) => acc + p.amountPaid, 0);
+      
+      receitasMensais.push(somaMes);
+      labelsMeses.push(mesesPT[mesInicio.getMonth()]);
+    }
+
+    // 2. Estado da Carteira (Doughnut)
+    const empAtivos = emprestimos.filter(e => e.status === 'active').length;
+    const empPagos = emprestimos.filter(e => e.status === 'paid').length;
+    const empDivida = emprestimos.filter(e => e.status !== 'active' && e.status !== 'paid').length;
+
     res.json({
       totalClientes,
       totalEmprestimosAtivos,
       valorEmprestado,
       valorRecebido,
       ultimosClientes,
-      plano: empresa ? empresa.subscriptionPlan : 'N/A'
+      plano: empresa ? empresa.subscriptionPlan : 'N/A',
+      chartData: {
+        receitasMensais,
+        labelsMeses,
+        carteira: {
+          ativos: empAtivos,
+          pagos: empPagos,
+          divida: empDivida
+        }
+      }
     });
   } catch (error) {
     console.error(error);
