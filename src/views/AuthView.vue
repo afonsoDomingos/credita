@@ -18,6 +18,7 @@
           <button type="submit" class="btn-solid" :disabled="loading">
             {{ loading ? 'A criar...' : 'Registar' }}
           </button>
+          <p class="mobile-toggle mt-4 text-sm">Já tem conta? <a href="#" @click.prevent="isSignUp = false" class="text-green-600 font-bold">Iniciar Sessão</a></p>
         </form>
       </div>
       
@@ -35,6 +36,7 @@
           <button type="submit" class="btn-solid" :disabled="loading">
             {{ loading ? 'A entrar...' : 'Entrar' }}
           </button>
+          <p class="mobile-toggle mt-4 text-sm">Não tem conta? <a href="#" @click.prevent="isSignUp = true" class="text-green-600 font-bold">Criar Conta</a></p>
         </form>
       </div>
       
@@ -359,4 +361,41 @@ input:focus {
 .text-3xl { font-size: 1.875rem; }
 .mt-4 { margin-top: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
+.text-green-600 { color: #16a34a; }
+
+.mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle {
+    display: block;
+  }
+  .auth-container {
+    min-height: 100vh;
+    border-radius: 0;
+    width: 100vw;
+  }
+  .sign-in-container, .sign-up-container {
+    width: 100%;
+    left: 0;
+  }
+  .auth-container.right-panel-active .sign-in-container {
+    transform: translateX(0);
+    opacity: 0;
+    z-index: 1;
+  }
+  .auth-container.right-panel-active .sign-up-container {
+    transform: translateX(0);
+    opacity: 1;
+    z-index: 5;
+    animation: none;
+  }
+  form {
+    padding: 0 30px;
+  }
+  .overlay-container {
+    display: none;
+  }
+}
 </style>
