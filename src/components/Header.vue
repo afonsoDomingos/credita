@@ -227,7 +227,7 @@ const goToResult = (result) => {
   showSearchResults.value = false;
   searchQuery.value = '';
   if (result.type === 'client') {
-    router.push('/app/clientes');
+    router.push(`/app/clientes/${result._id}`);
   } else if (result.type === 'loan') {
     router.push(`/app/emprestimos/${result._id}`);
   }

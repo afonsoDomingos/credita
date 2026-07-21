@@ -17,6 +17,7 @@ import Ajuda from './views/Ajuda.vue';
 import Calendario from './views/Calendario.vue';
 import EmprestimoDetalhes from './views/EmprestimoDetalhes.vue';
 import ReciboPrint from './views/ReciboPrint.vue';
+import ClientePerfil from './views/ClientePerfil.vue';
 const routes = [
   {
     path: '/',
@@ -45,6 +46,7 @@ const routes = [
     children: [
       { path: '', name: 'Dashboard', component: Dashboard },
       { path: 'clientes', name: 'Clientes', component: Clientes },
+      { path: 'clientes/:id', name: 'ClientePerfil', component: ClientePerfil },
       { path: 'emprestimos', name: 'Empréstimos', component: Emprestimos },
       { path: 'emprestimos/:id', name: 'EmprestimoDetalhes', component: EmprestimoDetalhes },
       { path: 'pagamentos', name: 'Pagamentos', component: Pagamentos },
