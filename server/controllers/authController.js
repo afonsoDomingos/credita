@@ -12,39 +12,64 @@ const generateToken = (id) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  console.log(`[AUTH] Tentativa de login recebida para: ${email}`);
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  console.log(`[AUTH-LOGIN] [${new Date().toISOString()}] IP: ${clientIp} | Tentativa de login: "${email}"`);
+
+  if (!email || !password) {
+    console.warn(`[AUTH-LOGIN] Dados incompletos fornecidos: email=${!!email}, password=${!!password}`);
+    return res.status(400).json({ 
+      message: 'Por favor forneça email e palavra-passe.',
+      code: 'MISSING_CREDENTIALS'
+    });
+  }
 
   try {
-    const user = await User.findOne({ email }).populate('company');
+    const user = await User.findOne({ email: email.trim().toLowerCase() }).populate('company');
     
     if (!user) {
-      console.log(`[AUTH] Falha: Utilizador ${email} não encontrado na BD.`);
-      return res.status(401).json({ message: 'Email ou password incorretos' });
+      console.warn(`[AUTH-LOGIN] ❌ Falha: Email "${email}" não cadastrado.`);
+      return res.status(401).json({ 
+        message: 'Email ou palavra-passe incorretos.',
+        code: 'INVALID_CREDENTIALS' 
+      });
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      console.log(`[AUTH] Falha: Password incorreta para ${email}.`);
-      return res.status(401).json({ message: 'Email ou password incorretos' });
+      console.warn(`[AUTH-LOGIN] ❌ Falha: Palavra-passe incorreta para "${email}".`);
+      return res.status(401).json({ 
+        message: 'Email ou palavra-passe incorretos.',
+        code: 'INVALID_CREDENTIALS' 
+      });
     }
 
-    // Check if it's a company and if the company is suspended
+    // Verificar se a empresa está suspensa
     if (user.role === 'empresa' && user.company && !user.company.isActive) {
-      console.log(`[AUTH] Falha: Empresa suspensa (${email}).`);
-      return res.status(403).json({ message: 'A sua conta encontra-se suspensa. Contacte o administrador.' });
+      console.warn(`[AUTH-LOGIN] ⚠️ Acesso negado: Empresa "${user.company.name}" (${email}) está suspensa.`);
+      return res.status(403).json({ 
+        message: 'A sua conta encontra-se suspensa. Contacte o suporte.',
+        code: 'ACCOUNT_SUSPENDED' 
+      });
     }
 
-    console.log(`[AUTH] Sucesso: Login aprovado para ${email} (Role: ${user.role})`);
+    const token = generateToken(user._id);
+    console.log(`[AUTH-LOGIN] ✅ Sucesso: Login efetuado com sucesso para "${email}" (Role: ${user.role})`);
+
     res.json({
       _id: user._id,
       email: user.email,
       role: user.role,
       company: user.company,
-      token: generateToken(user._id),
+      token
     });
   } catch (error) {
-    console.error('[AUTH] Erro interno durante o login:', error);
-    res.status(500).json({ message: 'Erro no servidor', error: error.message, stack: error.stack });
+    console.error(`[AUTH-LOGIN-ERROR] 💥 Exceção crítica durante login de "${email}":`, error);
+    res.status(500).json({ 
+      message: 'Erro interno no servidor de autenticação.',
+      error: error.message,
+      code: 'SERVER_ERROR',
+      timestamp: new Date().toISOString()
+    });
   }
 };
 
