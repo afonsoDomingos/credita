@@ -613,6 +613,8 @@ const toast = useToast();
 const empresas = ref([]);
 const receipts = ref([]);
 const stats = ref(null);
+const loading = ref(true);
+const activeTab = ref('empresas');
 const logoErrors = ref({});
 const onLogoError = (id) => {
   logoErrors.value[id] = true;
