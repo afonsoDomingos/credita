@@ -91,48 +91,7 @@
         </div>
       </div>
 
-      <!-- Side Section -->
-      <div class="side-section flex-col gap-6">
-        <!-- Próximos Vencimentos -->
-        <div class="surface list-card">
-          <div class="card-header flex justify-between items-center">
-            <h3 class="font-semibold">Próximos Vencimentos</h3>
-            <button class="btn-icon"><MoreHorizontal :size="18" /></button>
-          </div>
-          <div class="list-content">
-            <div class="list-item payment-item" v-for="i in 4" :key="'venc'+i">
-              <div class="flex justify-between items-center mb-1">
-                <span class="font-medium text-sm">Parcela #{{ i }} - Cliente {{ i }}</span>
-                <span class="font-bold text-sm text-orange">MT 50.000</span>
-              </div>
-              <div class="flex justify-between items-center text-xs text-muted">
-                <span class="flex items-center gap-1"><Calendar :size="12" /> Vence em {{ i }} dias</span>
-                <span class="status-badge status-warning">Pendente</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Últimos Pagamentos -->
-        <div class="surface list-card">
-          <div class="card-header flex justify-between items-center">
-            <h3 class="font-semibold">Últimos Pagamentos</h3>
-            <button class="btn-icon"><MoreHorizontal :size="18" /></button>
-          </div>
-          <div class="list-content">
-            <div class="list-item payment-item" v-for="i in 4" :key="'pag'+i">
-              <div class="flex justify-between items-center mb-1">
-                <span class="font-medium text-sm">João Oliveira</span>
-                <span class="font-bold text-sm text-green">+ MT 25.000</span>
-              </div>
-              <div class="flex justify-between items-center text-xs text-muted">
-                <span>Recebido via Transf.</span>
-                <span>Hoje, 10:{{ i * 10 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Side Section (Removido - Dados mockados) -->
     </div>
   </div>
 </template>
@@ -287,7 +246,7 @@ onMounted(() => {
 
 .main-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
