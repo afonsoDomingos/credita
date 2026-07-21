@@ -3,6 +3,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+
+// ── Startup diagnostics ──────────────────────────────────────────
+console.log('[STARTUP] Node version:', process.version);
+console.log('[STARTUP] MONGO_URI set:', !!process.env.MONGO_URI);
+console.log('[STARTUP] JWT_SECRET set:', !!process.env.JWT_SECRET);
+if (!process.env.MONGO_URI) {
+  console.error('[STARTUP] ❌ FATAL: MONGO_URI is not set! Add it to Vercel environment variables.');
+}
+// ─────────────────────────────────────────────────────────────────
+
 const { upload } = require('./config/cloudinary');
 const Client = require('./models/Client');
 
