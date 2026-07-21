@@ -146,4 +146,41 @@ const impersonateCompany = async (req, res) => {
   }
 };
 
-module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany };
+const Receipt = require('../models/Receipt');
+
+// Obter estatísticas financeiras do Superadmin
+const getFinancialStats = async (req, res) => {
+  try {
+    // Apenas comprovativos aprovados contam como receita
+    const approvedReceipts = await Receipt.find({ status: 'approved' })
+      .populate('company', 'name subscriptionPlan')
+      .sort({ createdAt: -1 });
+
+    let totalRevenue = 0;
+    let thisMonthRevenue = 0;
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    approvedReceipts.forEach(receipt => {
+      const amount = receipt.amount || 0;
+      totalRevenue += amount;
+
+      const receiptDate = new Date(receipt.createdAt);
+      if (receiptDate.getMonth() === currentMonth && receiptDate.getFullYear() === currentYear) {
+        thisMonthRevenue += amount;
+      }
+    });
+
+    res.json({
+      totalRevenue,
+      thisMonthRevenue,
+      history: approvedReceipts
+    });
+  } catch (error) {
+    console.error('Error getting financial stats:', error);
+    res.status(500).json({ message: 'Erro ao obter finanças' });
+  }
+};
+
+module.exports = { createCompany, toggleCompanyStatus, updateCompanyPlan, deleteCompany, impersonateCompany, getFinancialStats };

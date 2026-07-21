@@ -11,6 +11,7 @@
     <!-- Tabs -->
     <div class="tabs flex gap-6 mb-6 border-b">
       <button class="tab-btn" :class="{ active: activeTab === 'empresas' }" @click="activeTab = 'empresas'">Empresas Registadas</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'faturacao' }" @click="loadFinance(); activeTab = 'faturacao'">Faturação / Receitas</button>
       <button class="tab-btn" :class="{ active: activeTab === 'comprovativos' }" @click="activeTab = 'comprovativos'">
         Comprovativos
         <span v-if="receipts.length > 0" class="badge-count">{{ receipts.length }}</span>
@@ -130,6 +131,58 @@
         
         <div v-else class="p-6 text-center text-muted">
           Ainda não tem empresas registadas.
+        </div>
+      </div>
+
+      <div v-if="activeTab === 'faturacao'">
+        <div v-if="loadingFinance" class="loader-wrapper p-12 text-center">
+          <Spinner message="A calcular faturação..." />
+        </div>
+        <div v-else-if="financeData">
+          <div class="stats-grid mb-8 p-6">
+            <div class="stat-card surface shadow-sm" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #bae6fd;">
+              <div class="stat-content">
+                <h3 class="stat-title text-blue-800">Receita Total</h3>
+                <p class="stat-value text-blue-600">MT {{ financeData.totalRevenue.toLocaleString() }}</p>
+              </div>
+              <div class="stat-icon-wrapper bg-blue-100 text-blue-600">
+                <DollarSign :size="32" />
+              </div>
+            </div>
+            
+            <div class="stat-card surface shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-color: #bbf7d0;">
+              <div class="stat-content">
+                <h3 class="stat-title text-green-800">Faturado Este Mês</h3>
+                <p class="stat-value text-green-600">MT {{ financeData.thisMonthRevenue.toLocaleString() }}</p>
+              </div>
+              <div class="stat-icon-wrapper bg-green-100 text-green-600">
+                <TrendingUp :size="32" />
+              </div>
+            </div>
+          </div>
+
+          <h3 class="font-bold text-lg px-6 py-2 border-b">Histórico de Pagamentos (Receitas)</h3>
+          <table class="companies-table" v-if="financeData.history && financeData.history.length > 0">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Empresa</th>
+                <th>Plano</th>
+                <th class="text-right">Valor Faturado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in financeData.history" :key="item._id" class="table-row">
+                <td>{{ new Date(item.createdAt).toLocaleDateString('pt-PT') }}</td>
+                <td class="font-bold">{{ item.company?.name || 'N/A' }}</td>
+                <td><span class="plan-badge">{{ item.company?.subscriptionPlan || 'N/A' }}</span></td>
+                <td class="text-right font-bold text-green-600">MT {{ item.amount.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="p-6 text-center text-muted">
+            Ainda não há receitas registadas.
+          </div>
         </div>
       </div>
 
@@ -377,7 +430,7 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send, Eye } from '@lucide/vue';
+import { Building2, Activity, Users, Edit, Power, Trash2, MessageSquare, Send, Eye, DollarSign, TrendingUp } from '@lucide/vue';
 import Spinner from '../components/Spinner.vue';
 import { useToast } from '../composables/useToast';
 import api from '../api';
@@ -388,6 +441,9 @@ const receipts = ref([]);
 const stats = ref(null);
 const loading = ref(true);
 const activeTab = ref('empresas');
+
+const financeData = ref(null);
+const loadingFinance = ref(false);
 
 const inbox = ref([]);
 const adminMessages = ref([]);
@@ -442,6 +498,19 @@ const loadEmpresas = async () => {
     console.error('Error loading data', error);
   } finally {
     loading.value = false;
+  }
+};
+
+const loadFinance = async () => {
+  if (financeData.value) return; // Já carregado
+  loadingFinance.value = true;
+  try {
+    const { data } = await api.get('/admin/finance');
+    financeData.value = data;
+  } catch (error) {
+    toast.error('Erro ao carregar dados financeiros');
+  } finally {
+    loadingFinance.value = false;
   }
 };
 
